@@ -35,24 +35,4 @@ CREATE TABLE queue_updates (
 CREATE INDEX idx_orders_client_id ON orders(client_id);
 CREATE INDEX idx_orders_agent_id ON orders(agent_id);
 CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_queue_updates_order_id ON queue_updates(order_id);
-
--- Create function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Create triggers for updated_at
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_orders_updated_at
-    BEFORE UPDATE ON orders
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column(); 
+CREATE INDEX idx_queue_updates_order_id ON queue_updates(order_id); 

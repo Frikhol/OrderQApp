@@ -12,17 +12,22 @@ type OrderController struct {
 	beego.Controller
 }
 
-type CreateOrderRequest struct {
-	Location   string    `json:"location"`
-	StartTime  time.Time `json:"start_time"`
-	TimeBuffer int       `json:"time_buffer"` // in minutes
-}
-
 func (c *OrderController) CreateOrder() {
-	var req CreateOrderRequest
-	if err := c.ParseForm(&req); err != nil {
+	location := c.GetString("location")
+	startTimeStr := c.GetString("start_time")
+	timeBuffer, _ := c.GetInt("time_buffer")
+
+	if location == "" || startTimeStr == "" {
 		c.Ctx.Output.SetStatus(400)
-		c.Data["json"] = map[string]string{"error": "Invalid request"}
+		c.Data["json"] = map[string]string{"error": "Location and start time are required"}
+		c.ServeJSON()
+		return
+	}
+
+	startTime, err := time.Parse(time.RFC3339, startTimeStr)
+	if err != nil {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = map[string]string{"error": "Invalid start time format"}
 		c.ServeJSON()
 		return
 	}
@@ -32,18 +37,18 @@ func (c *OrderController) CreateOrder() {
 
 	order := models.Order{
 		Client:        &models.User{Id: userID},
-		Location:      req.Location,
+		Location:      location,
 		Status:        "pending",
-		StartTime:     req.StartTime,
+		StartTime:     startTime,
 		QueuePosition: 0,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
 
-	// Calculate price based on time, location, and other factors
-	order.Price = calculatePrice(req.TimeBuffer)
+	// Calculate price based on time buffer
+	order.Price = calculatePrice(timeBuffer)
 
-	_, err := o.Insert(&order)
+	_, err = o.Insert(&order)
 	if err != nil {
 		c.Ctx.Output.SetStatus(500)
 		c.Data["json"] = map[string]string{"error": "Error creating order"}
