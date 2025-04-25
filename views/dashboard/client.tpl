@@ -4,35 +4,45 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Client Dashboard</h2>
-                <div>
-                    <a href="/orders/new" class="btn btn-primary me-2">Create New Order</a>
+            <h2 class="mb-4">Client Dashboard</h2>
+
+            <!-- Current Order Section -->
+            <div id="currentOrderSection" class="mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Current Order</h5>
+                        <span id="orderStatus" class="badge"></span>
+                    </div>
+                    <div class="card-body">
+                        <div id="currentOrderContent">
+                            <!-- Order details will be loaded here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
+            <!-- New Order Form Section -->
+            <div id="newOrderSection" class="card" style="display: none;">
                 <div class="card-header">
-                    <h5 class="mb-0">My Orders</h5>
+                    <h5 class="mb-0">Create New Order</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                    <th>Queue Position</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ordersTableBody">
-                                <!-- Orders will be loaded here via JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <form id="newOrderForm">
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="start_time" class="form-label">Start Time</label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="time_buffer" class="form-label">Time Buffer (minutes)</label>
+                            <input type="number" class="form-control" id="time_buffer" name="time_buffer" min="30" step="30" value="30" required>
+                            <small class="text-muted">Minimum 30 minutes, increments of 30 minutes</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Order</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -40,44 +50,111 @@
 </div>
 
 <script>
+// Error logging function
+function logError(error, context) {
+    const errorData = {
+        timestamp: new Date().toISOString(),
+        context: context,
+        error: error.message || error,
+        stack: error.stack,
+        userAgent: navigator.userAgent,
+        url: window.location.href
+    };
+
+    // Log to console
+    console.error('Error in context:', context, errorData);
+
+    // Send to server for logging
+    fetch('/api/logs/error', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify(errorData)
+    }).catch(logError => {
+        console.error('Failed to log error to server:', logError);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Load user's orders
-    fetch('/api/orders/my', {
+    // Load current order
+    fetch('/api/orders/current', {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to load current order');
+        }
+        return response.json();
+    })
     .then(data => {
-        const tbody = document.getElementById('ordersTableBody');
-        tbody.innerHTML = '';
-
-        data.forEach(order => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${order.id}</td>
-                <td>${order.location}</td>
-                <td>
-                    <span class="badge ${getStatusBadgeClass(order.status)}">
-                        ${order.status}
-                    </span>
-                </td>
-                <td>${order.queue_position || '-'}</td>
-                <td>${new Date(order.created_at).toLocaleString()}</td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="viewOrder(${order.id})">View</button>
-                    ${order.status === 'pending' ? `
-                        <button class="btn btn-sm btn-danger" onclick="cancelOrder(${order.id})">Cancel</button>
-                    ` : ''}
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+        console.log('Current order data:', data);
+        if (data && data.Id) {
+            // Show current order
+            displayCurrentOrder(data);
+        } else {
+            // Show new order form
+            showNewOrderForm();
+        }
     })
     .catch(error => {
-        console.error('Error loading orders:', error);
+        console.error('Error loading current order:', error);
+        logError(error, 'Loading current order');
+        showNewOrderForm();
     });
 });
+
+function displayCurrentOrder(order) {
+    const currentOrderSection = document.getElementById('currentOrderSection');
+    const newOrderSection = document.getElementById('newOrderSection');
+    const currentOrderContent = document.getElementById('currentOrderContent');
+    const orderStatus = document.getElementById('orderStatus');
+
+    // Update status badge
+    orderStatus.className = 'badge ' + getStatusBadgeClass(order.Status);
+    orderStatus.textContent = order.Status;
+
+    // Format order details
+    currentOrderContent.innerHTML = `
+        <div class="order-details">
+            <div class="mb-3">
+                <strong>Order ID:</strong> ${order.Id}
+            </div>
+            <div class="mb-3">
+                <strong>Location:</strong> ${order.Location}
+            </div>
+            <div class="mb-3">
+                <strong>Start Time:</strong> ${new Date(order.StartTime).toLocaleString()}
+            </div>
+            <div class="mb-3">
+                <strong>Price:</strong> $${order.Price ? order.Price.toFixed(2) : '0.00'}
+            </div>
+            <div class="mb-3">
+                <strong>Queue Position:</strong> ${order.QueuePosition || '-'}
+            </div>
+            <div class="mb-3">
+                <strong>Created At:</strong> ${new Date(order.CreatedAt).toLocaleString()}
+            </div>
+            ${order.Status === 'pending' ? `
+                <button class="btn btn-danger" onclick="cancelOrder(${order.Id})">Cancel Order</button>
+            ` : ''}
+        </div>
+    `;
+
+    currentOrderSection.style.display = 'block';
+    newOrderSection.style.display = 'none';
+}
+
+function showNewOrderForm() {
+    const currentOrderSection = document.getElementById('currentOrderSection');
+    const newOrderSection = document.getElementById('newOrderSection');
+
+    currentOrderSection.style.display = 'none';
+    newOrderSection.style.display = 'block';
+}
 
 function getStatusBadgeClass(status) {
     switch(status) {
@@ -94,10 +171,6 @@ function getStatusBadgeClass(status) {
     }
 }
 
-function viewOrder(orderId) {
-    window.location.href = `/orders/${orderId}`;
-}
-
 function cancelOrder(orderId) {
     if (confirm('Are you sure you want to cancel this order?')) {
         fetch(`/api/orders/${orderId}/cancel`, {
@@ -108,16 +181,87 @@ function cancelOrder(orderId) {
         })
         .then(response => {
             if (response.ok) {
-                window.location.reload();
+                showNewOrderForm();
             } else {
-                alert('Failed to cancel order');
+                throw new Error('Failed to cancel order');
             }
         })
         .catch(error => {
-            console.error('Error cancelling order:', error);
+            logError(error, 'Cancelling order');
             alert('An error occurred while cancelling the order');
         });
     }
 }
+
+// Handle new order form submission
+document.getElementById('newOrderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const location = document.getElementById('location').value;
+    const startTime = document.getElementById('start_time').value;
+    const timeBuffer = parseInt(document.getElementById('time_buffer').value);
+
+    if (!location || !startTime || !timeBuffer) {
+        const error = new Error('Missing required fields');
+        logError(error, 'Form validation');
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    // Format the start time to ISO string
+    const startTimeDate = new Date(startTime);
+    const startTimeISO = startTimeDate.toISOString();
+
+    const formData = {
+        location: location,
+        start_time: startTimeISO,
+        time_buffer: timeBuffer
+    };
+
+    console.log('Sending order data:', formData);
+
+    fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(data => {
+                console.error('Error response:', data);
+                throw new Error(data.error || 'Failed to create order');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Order created:', data);
+        if (data && data.Id) {  // Changed from data.id to data.Id to match Go struct field
+            displayCurrentOrder(data);
+        } else {
+            console.error('Invalid response data:', data);
+            throw new Error('Invalid response from server: Missing order ID');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating order:', error);
+        logError(error, 'Creating order');
+        alert(error.message || 'An error occurred while creating the order');
+    });
+});
+
+// Add error handling for unhandled promise rejections
+window.addEventListener('unhandledrejection', function(event) {
+    logError(event.reason, 'Unhandled Promise Rejection');
+});
+
+// Add error handling for global errors
+window.addEventListener('error', function(event) {
+    logError(event.error || event.message, 'Global Error');
+});
 </script>
 {{end}} 

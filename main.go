@@ -46,6 +46,9 @@ func init() {
 
 	// Register models
 	orm.RegisterModel(new(models.User))
+	orm.RegisterModel(new(models.Order))
+	orm.RegisterModel(new(models.QueueUpdate))
+	orm.RegisterModel(new(models.ErrorLog))
 
 	// Create tables
 	orm.RunSyncdb("default", false, true)

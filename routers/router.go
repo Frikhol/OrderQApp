@@ -21,11 +21,18 @@ func init() {
 	beego.Router("/dashboard", &controllers.DashboardController{}, "get:Index")
 
 	// Order routes (protected)
-	beego.Router("/orders/new", &controllers.OrderController{}, "post:CreateOrder")
-	beego.Router("/orders/:id/position", &controllers.OrderController{}, "put:UpdateQueuePosition")
+	beego.Router("/api/orders", &controllers.OrderController{}, "get:GetOrders")
+	beego.Router("/api/orders/current", &controllers.OrderController{}, "get:GetCurrentOrder")
+	beego.Router("/api/orders", &controllers.OrderController{}, "post:CreateOrder")
+	beego.Router("/api/orders/:id/position", &controllers.OrderController{}, "put:UpdateQueuePosition")
+	beego.Router("/api/orders/:id/cancel", &controllers.OrderController{}, "post:CancelOrder")
 
 	// Add authentication middleware to protected routes
 	beego.InsertFilter("/dashboard", beego.BeforeRouter, controllers.AuthMiddleware)
-	beego.InsertFilter("/orders", beego.BeforeRouter, controllers.AuthMiddleware)
-	beego.InsertFilter("/orders/:id/position", beego.BeforeRouter, controllers.AuthMiddleware)
+	beego.InsertFilter("/api/orders", beego.BeforeRouter, controllers.AuthMiddleware)
+	beego.InsertFilter("/api/orders/*", beego.BeforeRouter, controllers.AuthMiddleware)
+
+	// Error log routes
+	beego.Router("/api/logs/error", &controllers.ErrorLogController{}, "post:LogError")
+	beego.Router("/api/logs/error", &controllers.ErrorLogController{}, "get:GetErrorLogs")
 }
