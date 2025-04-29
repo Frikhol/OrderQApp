@@ -1,102 +1,58 @@
-# OrderQApp
+# Order System
 
-OrderQApp is a queue management application that connects clients who need to stand in line with agents who can stand in line for them.
+A microservices-based order management system with Beego frontend and gRPC backend.
 
-## Features
+## Architecture
 
-- User authentication (login/register)
-- Role-based access (client/agent)
-- Queue management
-- Real-time queue position updates
-- Dynamic pricing based on time and conditions
+The system consists of the following services:
+
+- **API Gateway**: HTTP proxy service that handles client requests and forwards them to appropriate gRPC services
+- **Order Service**: Handles order-related operations
+- **Executor Service**: Manages order execution
+- **Notification Service**: Handles system notifications
+- **Auth Service**: Manages authentication and authorization
 
 ## Prerequisites
 
-- Go 1.21 or later
-- PostgreSQL 12 or later
-- Git
+- Go 1.16 or later
+- Protocol Buffers compiler (protoc)
+- Docker and Docker Compose (for deployment)
 
-## Installation
+## Setup
 
-1. Clone the repository:
+1. Install dependencies:
 ```bash
-git clone https://github.com/yourusername/orderqapp.git
-cd orderqapp
+go mod tidy
 ```
 
-2. Install dependencies:
+2. Generate gRPC code:
 ```bash
-go mod download
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+    proto/order.proto
 ```
 
-3. Set up the database:
+3. Run services:
 ```bash
-createdb orderqapp
-psql orderqapp < migrations/init.sql
+# Run API Gateway
+go run cmd/api-gateway/main.go
+
+# Run Order Service
+go run cmd/order-service/main.go
+
+# Run other services similarly
 ```
 
-4. Configure the application:
-Create a `conf/app.conf` file with the following content:
-```ini
-appname = orderqapp
-httpport = 8080
-runmode = dev
+## Development
 
-# Database configuration
-dbhost = localhost
-dbport = 5432
-dbuser = postgres
-dbpassword = postgres
-dbname = orderqapp
+- Frontend: `web/` directory contains Beego web application
+- Backend: `internal/` directory contains gRPC service implementations
+- Common packages: `pkg/` directory contains shared utilities
 
-# JWT configuration
-jwtSecret = your-secret-key
-```
+## Deployment
 
-## Running the Application
-
-1. Start the application:
-```bash
-go run main.go
-```
-
-2. Access the application at `http://localhost:8080`
-
-## API Endpoints
-
-### Authentication
-- POST `/auth/login` - User login
-- POST `/auth/register` - User registration
-
-### Orders
-- POST `/orders` - Create a new order
-- GET `/orders` - Get user's orders
-- PUT `/orders/:id/position` - Update queue position
-- GET `/orders/available` - Get available orders (agent only)
-
-## Project Structure
-
-```
-orderqapp/
-├── controllers/     # Request handlers
-├── models/         # Data models
-├── routers/        # URL routing
-├── static/         # Static files (JS, CSS)
-├── views/          # HTML templates
-├── conf/           # Configuration files
-├── migrations/     # Database migrations
-├── main.go         # Application entry point
-└── README.md       # This file
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+See `deploy/` directory for Docker and Kubernetes configurations.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT 
