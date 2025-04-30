@@ -52,7 +52,3 @@ go run cmd/order-service/main.go
 ## Deployment
 
 See `deploy/` directory for Docker and Kubernetes configurations.
-
-## License
-
-MIT 
