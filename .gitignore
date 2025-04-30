@@ -1,9 +1,9 @@
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.env.test.local
+/auth/.env
+/auth/.env.local
+/auth/.env.development
+/auth/.env.production
+/auth/.env.test
+/auth/.env.test.local
 
 .idea
 
