@@ -5,7 +5,7 @@ type Config struct {
 	Version     string `envconfig:"VERSION" required:"true"`
 	GRPCPort    string `envconfig:"GRPC_PORT" default:"9000"`
 	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
-	Host        string `envconfig:"HOST" default:"postgres"`
+	Host        string `envconfig:"HOST" default:"auth_postgres"`
 	Port        string `envconfig:"PORT" default:"5432"`
 	Username    string `envconfig:"USERNAME" default:"postgres"`
 	Password    string `envconfig:"PASSWORD" default:"postgres"`

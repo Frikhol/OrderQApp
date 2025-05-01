@@ -48,12 +48,13 @@ func (p *PostgresDB) UserExists(ctx context.Context, email string) error {
 	var count int
 	err := p.Db.QueryRowContext(ctx, query, email).Scan(&count)
 	if err != nil {
-		return err
+		p.Logger.Error("database error checking if user exists", zap.Error(err))
+		return fmt.Errorf("database error: %w", err)
 	}
 	if count == 0 {
 		return errors.New("user does not exist")
 	}
-	return nil
+	return nil // No error means user exists
 }
 
 func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
@@ -66,11 +67,20 @@ func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
 }
 
 func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+	p.Logger.Info("getting user by email", zap.String("email", email))
+
 	query := `SELECT email, password FROM users WHERE email = $1`
 	var user User
 	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.Email, &user.Password)
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			p.Logger.Error("user not found", zap.String("email", email))
+			return nil, errors.New("user not found")
+		}
+		p.Logger.Error("database error", zap.Error(err))
+		return nil, fmt.Errorf("database error: %w", err)
 	}
+
+	p.Logger.Info("user found", zap.String("email", user.Email))
 	return &user, nil
 }

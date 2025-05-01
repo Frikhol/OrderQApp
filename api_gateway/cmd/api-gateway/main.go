@@ -2,7 +2,7 @@ package main
 
 import (
 	"api_gateway/proto/auth_service"
-	_ "api_gateway/routers" // Import routers to initialize them
+	"api_gateway/router" // Import routers to initialize them
 	"log"
 	"os"
 	"os/signal"
@@ -11,11 +11,6 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-var (
-	AuthConn   *grpc.ClientConn
-	AuthClient auth_service.AuthServiceClient
 )
 
 func main() {
@@ -27,17 +22,22 @@ func main() {
 	go func() {
 		log.Println("Starting server...")
 
-		AuthConn, err := grpc.NewClient("auth:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		AuthConn, err := grpc.NewClient("auth_service:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalln(err)
 		}
+
+		log.Println("Connected to auth service")
+
 		defer func() {
 			if err := AuthConn.Close(); err != nil {
 				log.Println(err)
 			}
 		}()
 
-		AuthClient = auth_service.NewAuthServiceClient(AuthConn)
+		AuthClient := auth_service.NewAuthServiceClient(AuthConn)
+
+		router.InitRoutes(AuthClient)
 
 		web.Run()
 	}()

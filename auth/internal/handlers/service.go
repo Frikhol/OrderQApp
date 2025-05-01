@@ -21,7 +21,7 @@ func New(service interfaces.Service) *AuthService {
 func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	token, err := s.service.Login(ctx, req.Email, req.Password)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
+		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials: %v", err)
 	}
 	return &pb.LoginResponse{Token: token}, nil
 }

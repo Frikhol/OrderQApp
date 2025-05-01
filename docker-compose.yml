@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth_service
+    networks:
+      - orderq_network
+    environment:
+      - AUTH_SERVICE_HOST=auth_service
+      - AUTH_SERVICE_PORT=9000
+
+  auth_service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth_service
+    env_file:
+      - ./auth/.env
+    # Not exposing auth service port to host - only accessible within network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - orderq_network
+    volumes:
+      - ./auth/migrations:/migrations
+    command: >
+      sh -c "
+        cd /migrations && 
+        apk add --no-cache postgresql-client &&
+        sleep 5 &&
+        goose -dir /migrations postgres \"host=postgres port=5432 user=postgres password=postgres dbname=auth_db sslmode=disable\" up &&
+        /root/auth_service
+      "
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: auth_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=auth_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - orderq_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  orderq_network:
+    driver: bridge
+
+volumes:
+  postgres_data: 

@@ -8,6 +8,9 @@ COPY go.mod go.sum ./
 # Download all dependencies
 RUN go mod download
 
+# Install goose for migrations
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 # Copy the source code
 COPY . .
 COPY .env .
@@ -18,12 +21,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o auth_service ./cm
 # Start a new stage from scratch
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates postgresql-client go
 
 WORKDIR /root/
 
 # Copy the binary from builder
 COPY --from=builder /app/auth_service .
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+
+# Copy the migrations directory
+COPY --from=builder /app/migrations ./migrations
 
 # Expose port
 EXPOSE 9000
