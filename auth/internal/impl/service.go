@@ -26,34 +26,34 @@ func New(logger *zap.Logger, db *infra.PostgresDB, secret string) interfaces.Ser
 func (s *service) Login(ctx context.Context, email string, password string) (string, error) {
 	//empty check
 	if email == "" || password == "" {
-		s.logger.Error("email or password is empty")
+		// s.logger.Error("email or password is empty")
 		return "", errors.New("email and password are required")
 	}
 
 	//email check
 	if !strings.Contains(email, "@") {
-		s.logger.Error("invalid email format", zap.String("email", email))
+		// s.logger.Error("invalid email format", zap.String("email", email))
 		return "", errors.New("invalid email")
 	}
 
-	s.logger.Info("attempting login", zap.String("email", email))
+	// s.logger.Info("attempting login", zap.String("email", email))
 
 	//get user directly without checking existence first
 	user, err := s.db.GetUserByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("failed to get user", zap.Error(err))
-		return "", errors.New("user not found or invalid credentials")
+		// s.logger.Error("failed to get user", zap.Error(err))
+		return "", errors.New("no such user")
 	}
 
-	s.logger.Info("user found, checking password", zap.String("email", user.Email), zap.String("password", user.Password))
+	// s.logger.Info("user found, checking password", zap.String("email", user.Email), zap.String("password", user.Password))
 
 	//check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		s.logger.Error("password comparison failed", zap.Error(err))
+		// s.logger.Error("password comparison failed", zap.Error(err))
 		return "", errors.New("invalid password")
 	}
 
-	s.logger.Info("password correct, generating token")
+	// s.logger.Info("password correct, generating token")
 
 	//create token
 	claims := jwt.MapClaims{
@@ -63,11 +63,11 @@ func (s *service) Login(ctx context.Context, email string, password string) (str
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(s.secret))
 	if err != nil {
-		s.logger.Error("failed to create token", zap.Error(err))
+		// s.logger.Error("failed to create token", zap.Error(err))
 		return "", errors.New("failed to create token")
 	}
 
-	s.logger.Info("login successful", zap.String("email", email))
+	// s.logger.Info("login successful", zap.String("email", email))
 	return tokenString, nil
 }
 
@@ -88,8 +88,6 @@ func (s *service) Register(ctx context.Context, email string, password string) e
 		// No error means user exists
 		return errors.New("user already exists")
 	} else if !strings.Contains(err.Error(), "user does not exist") {
-		// If it's an error other than "user does not exist"
-		s.logger.Error("error checking if user exists", zap.Error(err))
 		return errors.New("error checking if user exists")
 	}
 	// If error is "user does not exist", proceed with registration
