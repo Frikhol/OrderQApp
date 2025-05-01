@@ -1,22 +1,25 @@
-version: '3'
+version: '3.8'
 
 services:
-  api_gateway:
+  api-gateway:
     build:
       context: ./api_gateway
       dockerfile: Dockerfile
-    container_name: api_gateway
     ports:
       - "8080:8080"
-    depends_on:
-      - auth_service
+    volumes:
+      - ./api_gateway/views:/app/views
+      - ./api_gateway/static:/app/static
+    environment:
+      - GO_ENV=development
+      - AUTH_SERVICE_HOST=auth
+      - AUTH_SERVICE_PORT=9000
     networks:
       - orderq_network
-    environment:
-      - AUTH_SERVICE_HOST=auth_service
-      - AUTH_SERVICE_PORT=9000
+    depends_on:
+      - auth
 
-  auth_service:
+  auth:
     build:
       context: ./auth
       dockerfile: Dockerfile

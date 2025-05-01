@@ -19,14 +19,15 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /app/api_gateway .
-# Copy static files and views if needed
-COPY --from=builder /app/static ./static
-COPY --from=builder /app/views ./views
+# Copy conf directory
 COPY --from=builder /app/conf ./conf
+
+# Create directories for volumes
+RUN mkdir -p views static
 
 # Expose port
 EXPOSE 8080

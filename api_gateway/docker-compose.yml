@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./views:/app/views
+      - ./static:/app/static
+    environment:
+      - GO_ENV=development 
