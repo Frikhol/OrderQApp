@@ -25,6 +25,7 @@
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                             <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
                         </div>
+                        <div class="invalid-feedback" id="emailError"></div>
                     </div>
                     <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
@@ -32,6 +33,7 @@
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
                         </div>
+                        <div class="invalid-feedback" id="passwordError"></div>
                     </div>
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
@@ -39,6 +41,7 @@
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
                         </div>
+                        <div class="invalid-feedback" id="confirmPasswordError"></div>
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
