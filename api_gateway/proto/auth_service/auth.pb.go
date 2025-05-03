@@ -172,7 +172,6 @@ func (x *RegisterRequest) GetPassword() string {
 type RegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -212,13 +211,6 @@ func (x *RegisterResponse) GetSuccess() bool {
 		return x.Success
 	}
 	return false
-}
-
-func (x *RegisterResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 type ValidateTokenRequest struct {
@@ -268,7 +260,7 @@ func (x *ValidateTokenRequest) GetToken() string {
 type ValidateTokenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -310,9 +302,9 @@ func (x *ValidateTokenResponse) GetSuccess() bool {
 	return false
 }
 
-func (x *ValidateTokenResponse) GetMessage() string {
+func (x *ValidateTokenResponse) GetUserId() string {
 	if x != nil {
-		return x.Message
+		return x.UserId
 	}
 	return ""
 }
@@ -330,19 +322,18 @@ const file_auth_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token\"C\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"F\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\",\n" +
 	"\x10RegisterResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\",\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
 	"\x14ValidateTokenRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"K\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"J\n" +
 	"\x15ValidateTokenResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\xfa\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId2\xfa\x01\n" +
 	"\vAuthService\x12B\n" +
 	"\x05Login\x12\x1a.auth_service.LoginRequest\x1a\x1b.auth_service.LoginResponse\"\x00\x12K\n" +
 	"\bRegister\x12\x1d.auth_service.RegisterRequest\x1a\x1e.auth_service.RegisterResponse\"\x00\x12Z\n" +
-	"\rValidateToken\x12\".auth_service.ValidateTokenRequest\x1a#.auth_service.ValidateTokenResponse\"\x00B\x1eZ\x1corderq/internal/auth_serviceb\x06proto3"
+	"\rValidateToken\x12\".auth_service.ValidateTokenRequest\x1a#.auth_service.ValidateTokenResponse\"\x00B!Z\x1fauth_service/proto/auth_serviceb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once

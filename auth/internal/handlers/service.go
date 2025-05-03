@@ -31,13 +31,13 @@ func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "register failed: %v", err)
 	}
-	return &pb.RegisterResponse{Success: true, Message: "user registered successfully"}, nil
+	return &pb.RegisterResponse{Success: true}, nil
 }
 
 func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
-	err := s.service.ValidateToken(ctx, req.Token)
+	user_id, err := s.service.ValidateToken(ctx, req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid token")
 	}
-	return &pb.ValidateTokenResponse{Success: true, Message: "token is valid"}, nil
+	return &pb.ValidateTokenResponse{Success: true, UserId: user_id}, nil
 }

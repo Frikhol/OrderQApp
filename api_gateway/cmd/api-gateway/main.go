@@ -2,6 +2,7 @@ package main
 
 import (
 	"api_gateway/proto/auth_service"
+	"api_gateway/proto/order_service"
 	"api_gateway/router" // Import routers to initialize them
 	"log"
 	"os"
@@ -35,9 +36,23 @@ func main() {
 			}
 		}()
 
-		AuthClient := auth_service.NewAuthServiceClient(AuthConn)
+		OrderConn, err := grpc.NewClient("order_service:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-		router.InitRoutes(AuthClient)
+		log.Println("Connected to order service")
+
+		defer func() {
+			if err := OrderConn.Close(); err != nil {
+				log.Println(err)
+			}
+		}()
+
+		AuthClient := auth_service.NewAuthServiceClient(AuthConn)
+		OrderClient := order_service.NewOrderServiceClient(OrderConn)
+
+		router.InitRoutes(AuthClient, OrderClient)
 
 		web.Run()
 	}()

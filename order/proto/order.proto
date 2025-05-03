@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package order_service;
+
+option go_package = "order_service/proto/order_service";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+service OrderService {
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {}
+    rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
+    rpc GetOrderById(GetOrderByIdRequest) returns (GetOrderByIdResponse) {}
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {}
+    rpc FinishOrder(FinishOrderRequest) returns (FinishOrderResponse) {}
+}
+
+// Common Order message used in responses
+message Order {
+    string order_id = 1;
+    string user_id = 2;
+    string order_address = 3;
+    string order_location = 4;
+    google.protobuf.Timestamp order_date = 5;
+    google.protobuf.Duration order_time_gap = 6;
+    string order_status = 7; // "pending", "active", "finished", "cancelled"
+}
+
+message CreateOrderRequest {
+    string user_id = 1;
+    string order_address = 2; //адрес(или координаты)
+    string order_location = 3; //место или заведение
+    google.protobuf.Timestamp order_date = 4;
+    google.protobuf.Duration order_time_gap = 5; //time gap to go to the location
+    //TODO: add payment things
+}
+
+message CreateOrderResponse {
+    bool success = 1;
+}
+
+message GetOrdersRequest {
+    string user_id = 1;
+    // string status = 2; // Optional filter by status
+    // int32 limit = 3; // Limit number of orders to return
+    // int32 offset = 4; // For pagination
+}
+
+message GetOrdersResponse {
+    repeated Order orders = 1;
+}
+
+message GetOrderByIdRequest {
+    string order_id = 1;
+}
+
+message GetOrderByIdResponse {
+    Order order = 1;
+}
+
+message CancelOrderRequest {
+    string order_id = 1;
+    // string reason = 2; // Optional reason for cancellation
+}
+
+message CancelOrderResponse {
+    bool success = 1;
+}
+
+message FinishOrderRequest {
+    string order_id = 1;
+}
+
+message FinishOrderResponse {
+    bool success = 1;
+}

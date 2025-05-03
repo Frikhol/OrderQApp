@@ -16,8 +16,8 @@
                     <h2>Create Account</h2>
                     <p>Join OrderQ and start saving time</p>
                 </div>
-                <div class="alert alert-danger" role="alert" id="errorAlert"></div>
-                <div class="alert alert-success" role="alert" id="successAlert"></div>
+                <div class="alert alert-danger" role="alert" id="errorAlert" style="display: none;"></div>
+                <div class="alert alert-success" role="alert" id="successAlert" style="display: none;"></div>
                 <form id="registerForm">
                     <div class="mb-4">
                         <label for="email" class="form-label">Email Address</label>

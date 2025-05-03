@@ -57,8 +57,8 @@ func (s *service) Login(ctx context.Context, email string, password string) (str
 
 	//create token
 	claims := jwt.MapClaims{
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(s.secret))
@@ -113,10 +113,10 @@ func (s *service) Register(ctx context.Context, email string, password string) e
 	return nil
 }
 
-func (s *service) ValidateToken(ctx context.Context, tokenString string) error {
+func (s *service) ValidateToken(ctx context.Context, tokenString string) (string, error) {
 	//empty check
 	if tokenString == "" {
-		return errors.New("token is required")
+		return "", errors.New("token is required")
 	}
 
 	//validate token
@@ -124,14 +124,14 @@ func (s *service) ValidateToken(ctx context.Context, tokenString string) error {
 		return []byte(s.secret), nil
 	})
 	if err != nil || !token.Valid {
-		return errors.New("invalid token")
+		return "", errors.New("invalid token")
 	}
 
 	//check expiration
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || time.Now().Unix() > int64(claims["exp"].(float64)) {
-		return errors.New("token expired")
+		return "", errors.New("token expired")
 	}
 
-	return nil
+	return claims["user_id"].(string), nil
 }

@@ -69,6 +69,57 @@ function setButtonSubmitting(button, isSubmitting) {
     }
 }
 
+// Token handling functions
+function getToken() {
+    return document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+}
+
+function clearToken() {
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
+// Function to check if the token is valid
+async function validateToken() {
+    const token = getToken();
+    if (!token) {
+        return false;
+    }
+
+    try {
+        const response = await fetch('/auth/validate', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Handle unauthorized errors globally
+function setupTokenInvalidationHandler() {
+    // Handle API response errors that have 401 status
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options = {}) {
+        const response = await originalFetch(url, options);
+        
+        if (response.status === 401) {
+            const responseText = await response.text();
+            if (responseText.includes("Invalid or expired token")) {
+                // Clear the invalid token
+                clearToken();
+                
+                // Redirect to login page
+                window.location.href = '/auth/login?session_expired=true';
+            }
+        }
+        
+        return response;
+    };
+}
+
 // Login form handling
 function setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
@@ -111,37 +162,36 @@ function setupLoginForm() {
                 body: JSON.stringify({
                     email: email.value,
                     password: password.value
-                })
+                }),
+                redirect: 'follow'
             });
-
-            const data = await response.json();
             
-            if (!response.ok) {
-                if (data.errors) {
-                    // Handle field-level errors
-                    if (data.errors.email) {
-                        showFieldError(email, emailError, 'Please check your email address');
-                    }
-                    if (data.errors.password) {
-                        showFieldError(password, passwordError, 'Incorrect password. Please try again');
-                    }
-                } else {
-                    showAlert(errorAlert, 'Unable to sign in. Please check your credentials and try again.');
-                }
-                setButtonSubmitting(submitButton, false);
+            // For successful logins, the backend will redirect to /orders (302 status)
+            if (response.redirected) {
+                window.location.href = response.url;
                 return;
             }
-
-            // Store the token in localStorage
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
-
-            // Show success message before redirect
-            showAlert(errorAlert, 'Successfully signed in! Redirecting...', false);
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
+            
+            // Handle JSON responses for error cases
+            if (response.headers.get('content-type')?.includes('application/json')) {
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    if (data.errors) {
+                        // Handle field-level errors
+                        if (data.errors.email) {
+                            showFieldError(email, emailError, 'Please check your email address');
+                        }
+                        if (data.errors.password) {
+                            showFieldError(password, passwordError, 'Incorrect password. Please try again');
+                        }
+                    } else {
+                        showAlert(errorAlert, data.error || 'Unable to sign in. Please check your credentials and try again.');
+                    }
+                    setButtonSubmitting(submitButton, false);
+                    return;
+                }
+            }        
         } catch (error) {
             showAlert(errorAlert, 'Something went wrong. Please try again later.');
             setButtonSubmitting(submitButton, false);
@@ -217,15 +267,23 @@ function setupRegisterForm() {
                         showFieldError(password, passwordError, 'Password must be at least 8 characters long');
                     }
                 } else {
-                    showAlert(errorAlert, 'Unable to create account. Please try again.');
+                    showAlert(errorAlert, data.error || 'Unable to create account. Please try again.');
                 }
                 setButtonSubmitting(submitButton, false);
                 return;
             }
 
-            showAlert(successAlert, 'Account created successfully! You can now sign in.', false);
+            showAlert(successAlert, 'Account created successfully! You will be redirected to the login page.', false);
             registerForm.reset();
-            setButtonSubmitting(submitButton, false);
+            
+            // If a redirect URL is provided, redirect after a short delay
+            if (data.redirect) {
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1000); // 2 seconds delay to allow user to see the success message
+            } else {
+                setButtonSubmitting(submitButton, false);
+            }
         } catch (error) {
             showAlert(errorAlert, 'Something went wrong. Please try again later.');
             setButtonSubmitting(submitButton, false);
@@ -233,8 +291,18 @@ function setupRegisterForm() {
     });
 }
 
-// Initialize forms when the page loads
+// Initialize forms and handlers when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     setupLoginForm();
     setupRegisterForm();
+    setupTokenInvalidationHandler();
+    
+    // Check for session_expired parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('session_expired') === 'true') {
+        const errorAlert = document.getElementById('errorAlert');
+        if (errorAlert) {
+            showAlert(errorAlert, 'Your session has expired. Please sign in again.');
+        }
+    }
 }); 

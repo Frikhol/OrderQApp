@@ -14,10 +14,16 @@ services:
       - GO_ENV=development
       - AUTH_SERVICE_HOST=auth
       - AUTH_SERVICE_PORT=9000
+      - ORDER_SERVICE_HOST=order
+      - ORDER_SERVICE_PORT=9001
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
     networks:
       - orderq_network
     depends_on:
       - auth
+      - order
+      - rabbitmq
 
   auth:
     build:
@@ -28,7 +34,7 @@ services:
       - ./auth/.env
     # Not exposing auth service port to host - only accessible within network
     depends_on:
-      postgres:
+      auth_postgres:
         condition: service_healthy
     networks:
       - orderq_network
@@ -39,11 +45,56 @@ services:
         cd /migrations && 
         apk add --no-cache postgresql-client &&
         sleep 5 &&
-        goose -dir /migrations postgres \"host=postgres port=5432 user=postgres password=postgres dbname=auth_db sslmode=disable\" up &&
+        goose -dir /migrations postgres \"host=auth_postgres port=5432 user=postgres password=postgres dbname=auth_db sslmode=disable\" up &&
         /root/auth_service
       "
 
-  postgres:
+  order:
+    build:
+      context: ./order
+      dockerfile: Dockerfile
+    container_name: order_service
+    env_file:
+      - ./order/.env
+    # Not exposing order service port to host - only accessible within network
+    depends_on:
+      order_postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orderq_network
+    volumes:
+      - ./order/migrations:/migrations
+    command: >
+      sh -c "
+        cd /migrations && 
+        apk add --no-cache postgresql-client &&
+        sleep 5 &&
+        goose -dir /migrations postgres \"host=order_postgres port=5432 user=postgres password=postgres dbname=order_db sslmode=disable\" up &&
+        /root/order_service
+      "
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: orderq_rabbitmq
+    ports:
+      - "5672:5672"   # RabbitMQ default port
+      - "15672:15672" # Management plugin port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - orderq_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth_postgres:
     image: postgres:15-alpine
     container_name: auth_postgres
     environment:
@@ -51,7 +102,24 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=auth_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - auth_postgres_data:/var/lib/postgresql/data/
+    networks:
+      - orderq_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+  order_postgres:
+    image: postgres:15-alpine
+    container_name: order_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=order_db
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data/
     networks:
       - orderq_network
     healthcheck:
@@ -65,4 +133,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data: 
+  auth_postgres_data:
+  order_postgres_data:
+  rabbitmq_data: 

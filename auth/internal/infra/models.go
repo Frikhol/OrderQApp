@@ -1,6 +1,9 @@
 package infra
 
+import "github.com/google/uuid"
+
 type User struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID       uuid.UUID `json:"id"`
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 
@@ -54,7 +53,7 @@ func (c *AuthController) Login() {
 	}
 
 	// Call the auth service
-	resp, err := c.AuthClient.Login(context.Background(), loginReq)
+	resp, err := c.AuthClient.Login(c.Ctx.Request.Context(), loginReq)
 	if err != nil {
 		// Log the full error to help with debugging
 		c.Ctx.Output.SetStatus(401)
@@ -67,18 +66,22 @@ func (c *AuthController) Login() {
 		return
 	}
 
-	tokenString := resp.Token
+	// Set the token cookie
+	c.Ctx.SetCookie("token", resp.Token, 86400, "/", "", false, true)
 
-	// Set session
-	c.SetSession("user_email", req.Email)
-	c.SetSession("is_authenticated", true)
-	c.SetSession("token", tokenString) // Also store the token in the session
-
-	c.Data["json"] = map[string]interface{}{
-		"token":      tokenString,
-		"user_email": req.Email,
+	// Check if it's an AJAX request
+	if c.Ctx.Input.IsAjax() {
+		c.Data["json"] = map[string]string{
+			"message":  "Login successful",
+			"token":    resp.Token,
+			"redirect": "/orders",
+		}
+		c.ServeJSON()
+		return
 	}
-	c.ServeJSON()
+
+	// For non-AJAX requests, redirect directly
+	c.Redirect("/orders", 302)
 }
 
 func (c *AuthController) Register() {
@@ -122,7 +125,7 @@ func (c *AuthController) Register() {
 		Password: req.Password,
 	}
 
-	resp, err := c.AuthClient.Register(context.Background(), registerReq)
+	_, err = c.AuthClient.Register(c.Ctx.Request.Context(), registerReq)
 	if err != nil {
 		c.Ctx.Output.SetStatus(500)
 		c.Data["json"] = map[string]string{"error": "Error registering user: " + err.Error()}
@@ -130,30 +133,57 @@ func (c *AuthController) Register() {
 		return
 	}
 
-	c.Data["json"] = map[string]string{"message": resp.Message}
-	c.ServeJSON()
-}
-
-func (c *AuthController) IsLoggedIn() {
-	token := c.GetSession("token")
-
-	req := auth_service.ValidateTokenRequest{Token: token.(string)}
-
-	resp, err := c.AuthClient.ValidateToken(context.Background(), &req)
-	if !resp.Success || err != nil {
-		c.Ctx.Output.SetStatus(401)
-		c.Data["json"] = map[string]string{"error": "Invalid token"}
-		c.ServeJSON()
-		return
-	}
-
-	c.Data["json"] = map[string]interface{}{
-		"Message": resp.Message,
+	// Successful registration response
+	c.Ctx.Output.SetStatus(201) // Created status
+	c.Data["json"] = map[string]string{
+		"message":  "User registered successfully",
+		"redirect": "/auth/login", // Provide redirect URL
 	}
 	c.ServeJSON()
 }
 
 func (c *AuthController) Logout() {
+	// Clear the token cookie
+	c.Ctx.SetCookie("token", "", -1, "/", "", false, true)
 	c.DelSession("token")
 	c.Redirect("/auth/login", 302)
+}
+
+// ValidateToken checks if the token is valid
+func (c *AuthController) ValidateToken() {
+	// Get token from header or cookie
+	token := c.Ctx.Input.Header("Authorization")
+	if token != "" && strings.HasPrefix(token, "Bearer ") {
+		token = strings.TrimPrefix(token, "Bearer ")
+	} else {
+		token = c.Ctx.GetCookie("token")
+	}
+
+	if token == "" {
+		c.Ctx.Output.SetStatus(401)
+		c.Data["json"] = map[string]string{"error": "No token provided"}
+		c.ServeJSON()
+		return
+	}
+
+	// Validate token with auth service
+	validateReq := &auth_service.ValidateTokenRequest{
+		Token: token,
+	}
+
+	resp, err := c.AuthClient.ValidateToken(c.Ctx.Request.Context(), validateReq)
+	if err != nil || !resp.Success {
+		c.Ctx.Output.SetStatus(401)
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	// Token is valid
+	c.Ctx.Output.SetStatus(200)
+	c.Data["json"] = map[string]interface{}{
+		"valid":   true,
+		"user_id": resp.UserId,
+	}
+	c.ServeJSON()
 }

@@ -16,7 +16,7 @@
                     <h2>Welcome Back</h2>
                     <p>Sign in to your OrderQ account</p>
                 </div>
-                <div class="alert alert-danger" role="alert" id="errorAlert"></div>
+                <div class="alert alert-danger" role="alert" id="errorAlert" style="display: none;"></div>
                 <form id="loginForm">
                     <div class="mb-4">
                         <label for="email" class="form-label">Email Address</label>
