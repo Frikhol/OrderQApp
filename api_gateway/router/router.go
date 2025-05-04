@@ -23,11 +23,13 @@ func InitRoutes(authClient auth_service.AuthServiceClient, orderClient order_ser
 	web.Router("/auth/validate", &controllers.AuthController{AuthClient: authClient}, "get:ValidateToken")
 	web.Router("/auth/logout", &controllers.AuthController{AuthClient: authClient}, "get:Logout")
 
-	// Order get routes - allow page access but protect API endpoints
-	web.InsertFilter("/orders", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
+	// Order web routes - protected with JWT authentication
+	web.InsertFilter("/orders*", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
 	web.Router("/orders", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrdersPage")
 
 	// Order API routes - protected with JWT authentication
 	web.InsertFilter("/api/orders*", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
 	web.Router("/api/orders/create", &controllers.OrderController{OrderClient: orderClient}, "post:CreateOrder")
+	web.Router("/api/orders/list", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrdersList")
+	web.Router("/api/orders/:id", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrderById")
 }

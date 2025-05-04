@@ -45,8 +45,12 @@ func (s *service) CreateOrder(ctx context.Context, order *infra.Order) error {
 }
 
 func (s *service) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
-	//TODO: implement
-	return nil, nil
+	orders, err := s.db.GetOrders(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
 }
 
 func (s *service) GetOrderById(ctx context.Context, orderID uuid.UUID) (*infra.Order, error) {

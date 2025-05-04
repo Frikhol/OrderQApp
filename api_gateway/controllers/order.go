@@ -19,6 +19,22 @@ func (c *OrderController) GetOrdersPage() {
 	c.TplName = "orders.tpl"
 }
 
+func (c *OrderController) GetOrdersList() {
+	userID := c.Ctx.Input.GetData("user_id").(string)
+
+	orders, err := c.OrderClient.GetOrders(c.Ctx.Request.Context(), &order_service.GetOrdersRequest{
+		UserId: userID,
+	})
+	if err != nil {
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	c.Data["json"] = orders
+	c.ServeJSON()
+}
+
 func (c *OrderController) CreateOrder() {
 	// Define a struct to unmarshal the JSON data with string timestamps
 	type OrderRequest struct {

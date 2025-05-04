@@ -90,3 +90,32 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 
 	return nil
 }
+
+func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
+	query := `
+	SELECT * FROM orders WHERE user_id = $1
+	`
+	rows, err := p.Db.QueryContext(ctx, query, userID)
+	if err != nil {
+		p.Logger.Error("failed to get orders", zap.Error(err))
+		return nil, fmt.Errorf("failed to get orders: %w", err)
+	}
+	defer rows.Close()
+
+	orders := []*infra.Order{}
+	for rows.Next() {
+		var order infra.Order
+		if err := rows.Scan(&order); err != nil {
+			p.Logger.Error("failed to scan order", zap.Error(err))
+			return nil, fmt.Errorf("failed to scan order: %w", err)
+		}
+		orders = append(orders, &order)
+	}
+
+	if err := rows.Err(); err != nil {
+		p.Logger.Error("failed to iterate over orders", zap.Error(err))
+		return nil, fmt.Errorf("failed to iterate over orders: %w", err)
+	}
+
+	return orders, nil
+}
