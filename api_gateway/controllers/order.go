@@ -93,3 +93,19 @@ func (c *OrderController) CreateOrder() {
 	c.Data["json"] = map[string]string{"success": "Order created successfully"}
 	c.ServeJSON()
 }
+
+func (c *OrderController) GetOrderById() {
+	orderID := c.Ctx.Input.Param(":id")
+
+	order, err := c.OrderClient.GetOrderById(c.Ctx.Request.Context(), &order_service.GetOrderByIdRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	c.Data["json"] = order
+	c.ServeJSON()
+}

@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"order_service/internal/config"
 	"order_service/internal/infra"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -14,43 +17,66 @@ import (
 
 type PostgresDB struct {
 	Logger *zap.Logger
-	Db     *sql.DB
+	Db     *pgxpool.Pool
 }
 
 func New(logger *zap.Logger, cfg *config.Postgres) (*PostgresDB, error) {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.Host,
-		cfg.Port,
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.Username,
 		cfg.Password,
+		cfg.Host,
+		cfg.Port,
 		cfg.Database,
 	)
 
-	db, err := sql.Open("postgres", dsn)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		logger.Error("failed to create pgx pool", zap.Error(err))
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
-		logger.Error("failed to ping database", zap.Error(err))
+	// Проверка соединения
+	if err := pool.Ping(ctx); err != nil {
+		logger.Error("failed to ping pgx pool", zap.Error(err))
 		return nil, err
 	}
 
 	logger.Info("connected to database", zap.String("dsn", dsn))
-	return &PostgresDB{Logger: logger, Db: db}, nil
+	return &PostgresDB{Logger: logger, Db: pool}, nil
 }
 
 func (p *PostgresDB) Close() error {
-	return p.Db.Close()
+	p.Db.Close()
+	return nil
 }
 
 func (p *PostgresDB) GetCurrentOrder(ctx context.Context, userID uuid.UUID) (*infra.Order, error) {
 	query := `
-	SELECT * FROM orders WHERE user_id = $1 AND (order_status = 'pending' OR order_status = 'matching' OR order_status = 'signed')
+	SELECT
+		order_id,
+		user_id,
+		order_address,
+		order_location,
+		order_date,
+		order_time_gap,
+		order_status
+	FROM orders
+	WHERE user_id = $1
+	AND (order_status = 'pending' OR order_status = 'matching' OR order_status = 'signed')
 	`
 	var order infra.Order
-	if err := p.Db.QueryRowContext(ctx, query, userID).Scan(&order); err != nil {
+	if err := p.Db.QueryRow(ctx, query, userID).Scan(&order.OrderID,
+		&order.UserID,
+		&order.OrderAddress,
+		&order.OrderLocation,
+		&order.OrderDate,
+		&order.OrderTimeGap,
+		&order.OrderStatus,
+	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("no active order found")
 		}
@@ -72,7 +98,7 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 	RETURNING order_id
 	`
 
-	err := p.Db.QueryRowContext(
+	err := p.Db.QueryRow(
 		ctx,
 		query,
 		order.UserID,
@@ -93,9 +119,18 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 
 func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
 	query := `
-	SELECT * FROM orders WHERE user_id = $1
+	SELECT
+		order_id,
+		user_id,
+		order_address,
+		order_location,
+		order_date,
+		order_time_gap,
+		order_status
+	FROM orders
+	WHERE user_id = $1
 	`
-	rows, err := p.Db.QueryContext(ctx, query, userID)
+	rows, err := p.Db.Query(ctx, query, userID)
 	if err != nil {
 		p.Logger.Error("failed to get orders", zap.Error(err))
 		return nil, fmt.Errorf("failed to get orders: %w", err)
@@ -105,7 +140,14 @@ func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.
 	orders := []*infra.Order{}
 	for rows.Next() {
 		var order infra.Order
-		if err := rows.Scan(&order); err != nil {
+		if err := rows.Scan(&order.OrderID,
+			&order.UserID,
+			&order.OrderAddress,
+			&order.OrderLocation,
+			&order.OrderDate,
+			&order.OrderTimeGap,
+			&order.OrderStatus,
+		); err != nil {
 			p.Logger.Error("failed to scan order", zap.Error(err))
 			return nil, fmt.Errorf("failed to scan order: %w", err)
 		}
@@ -118,4 +160,35 @@ func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.
 	}
 
 	return orders, nil
+}
+
+func (p *PostgresDB) GetOrderById(ctx context.Context, orderID uuid.UUID) (*infra.Order, error) {
+	query := `
+	SELECT
+		order_id,
+		user_id,
+		order_address,
+		order_location,
+		order_date,
+		order_time_gap,
+		order_status
+	FROM orders
+	WHERE order_id = $1
+	`
+	var order infra.Order
+	if err := p.Db.QueryRow(ctx, query, orderID).Scan(&order.OrderID,
+		&order.UserID,
+		&order.OrderAddress,
+		&order.OrderLocation,
+		&order.OrderDate,
+		&order.OrderTimeGap,
+		&order.OrderStatus,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("order not found")
+		}
+		return nil, fmt.Errorf("failed to get order by id: %w", err)
+	}
+
+	return &order, nil
 }

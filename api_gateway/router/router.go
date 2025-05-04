@@ -20,16 +20,15 @@ func InitRoutes(authClient auth_service.AuthServiceClient, orderClient order_ser
 	// Auth post routes
 	web.Router("/auth/login", &controllers.AuthController{AuthClient: authClient}, "post:Login")
 	web.Router("/auth/register", &controllers.AuthController{AuthClient: authClient}, "post:Register")
-	web.Router("/auth/validate", &controllers.AuthController{AuthClient: authClient}, "get:ValidateToken")
 	web.Router("/auth/logout", &controllers.AuthController{AuthClient: authClient}, "get:Logout")
 
 	// Order web routes - protected with JWT authentication
-	web.InsertFilter("/orders*", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
+	web.InsertFilter("/orders", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
 	web.Router("/orders", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrdersPage")
 
 	// Order API routes - protected with JWT authentication
-	web.InsertFilter("/api/orders*", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
+	web.InsertFilter("/api/orders/*", web.BeforeRouter, middleware.JWTAuthMiddleware(authClient))
 	web.Router("/api/orders/create", &controllers.OrderController{OrderClient: orderClient}, "post:CreateOrder")
-	web.Router("/api/orders/list", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrdersList")
-	web.Router("/api/orders/:id", &controllers.OrderController{OrderClient: orderClient}, "get:GetOrderById")
+	web.Router("/api/orders/list", &controllers.OrderController{OrderClient: orderClient}, "post:GetOrdersList")
+	web.Router("/api/orders/:id", &controllers.OrderController{OrderClient: orderClient}, "post:GetOrderById")
 }

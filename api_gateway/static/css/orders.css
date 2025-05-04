@@ -1,0 +1,136 @@
+/* Main layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Hero section styling */
+.hero-section {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 60px 0;
+    margin-bottom: 40px;
+}
+
+/* Card styling */
+.feature-card, .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover, .card:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.card-footer {
+    background-color: #fff;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+}
+
+/* Button styling */
+.action-buttons {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.action-buttons .btn {
+    margin: 0 10px;
+    padding: 10px 30px;
+}
+
+/* Form styling */
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+.form-text {
+    font-size: 0.85rem;
+}
+
+/* Time inputs styling */
+.time-inputs input[type="number"] {
+    text-align: center;
+    font-weight: 500;
+}
+
+.time-inputs .input-group-text {
+    width: 40px;
+    justify-content: center;
+    background-color: #f8f9fa;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.time-inputs .input-group {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide number input arrows */
+.time-inputs input[type="number"]::-webkit-inner-spin-button, 
+.time-inputs input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.time-inputs input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Orders containers */
+.orders-container {
+    padding: 1rem 0;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .form-container {
+        padding: 1.5rem;
+    }
+    
+    .action-buttons .btn {
+        margin: 0 5px 10px;
+    }
+    
+    .time-inputs .col-4 {
+        padding: 0 5px;
+    }
+    
+    .time-inputs .input-group-text {
+        width: 30px;
+        font-size: 0.75rem;
+    }
+} 

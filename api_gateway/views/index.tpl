@@ -5,40 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrderQ - Queue Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .hero-section {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 80px 0;
-            margin-bottom: 40px;
-        }
-        .feature-card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        .auth-buttons {
-            margin-top: 30px;
-        }
-        .auth-buttons .btn {
-            margin: 0 10px;
-            padding: 10px 30px;
-        }
-        .benefit-icon {
-            font-size: 2.5rem;
-            color: #28a745;
-            margin-bottom: 1rem;
-        }
-        .cta-section {
-            background-color: #f8f9fa;
-            padding: 60px 0;
-            margin-top: 40px;
-        }
-    </style>
+    <link href="/static/css/main.css" rel="stylesheet">
 </head>
 <body>
     <div class="hero-section text-center">

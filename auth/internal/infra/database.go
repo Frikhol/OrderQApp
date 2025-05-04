@@ -67,9 +67,9 @@ func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
 
 func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 
-	query := `SELECT email, password FROM users WHERE email = $1`
+	query := `SELECT id, email, password FROM users WHERE email = $1`
 	var user User
-	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.Email, &user.Password)
+	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")
