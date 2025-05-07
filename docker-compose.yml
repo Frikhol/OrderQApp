@@ -15,7 +15,9 @@ services:
       - AUTH_SERVICE_HOST=auth
       - AUTH_SERVICE_PORT=9000
       - ORDER_SERVICE_HOST=order
-      - ORDER_SERVICE_PORT=9001
+      - ORDER_SERVICE_PORT=9000
+      - NOTIFICATION_SERVICE_HOST=notification
+      - NOTIFICATION_SERVICE_PORT=9000
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
     networks:
@@ -23,6 +25,7 @@ services:
     depends_on:
       - auth
       - order
+      - notification
       - rabbitmq
 
   auth:
@@ -127,6 +130,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    container_name: notification_service
+    env_file:
+      - ./notification/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orderq_network
 
 networks:
   orderq_network:
