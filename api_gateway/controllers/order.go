@@ -109,3 +109,35 @@ func (c *OrderController) GetOrderById() {
 	c.Data["json"] = order
 	c.ServeJSON()
 }
+
+func (c *OrderController) CancelOrder() {
+	orderID := c.Ctx.Input.Param(":id")
+
+	_, err := c.OrderClient.CancelOrder(c.Ctx.Request.Context(), &order_service.CancelOrderRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	c.Data["json"] = map[string]string{"success": "Order cancelled successfully"}
+	c.ServeJSON()
+}
+
+func (c *OrderController) CompleteOrder() {
+	orderID := c.Ctx.Input.Param(":id")
+
+	_, err := c.OrderClient.CompleteOrder(c.Ctx.Request.Context(), &order_service.CompleteOrderRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	c.Data["json"] = map[string]string{"success": "Order completed successfully"}
+	c.ServeJSON()
+}

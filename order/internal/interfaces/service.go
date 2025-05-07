@@ -12,5 +12,5 @@ type Service interface {
 	GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error)
 	GetOrderById(ctx context.Context, orderID uuid.UUID) (*infra.Order, error)
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
-	FinishOrder(ctx context.Context, orderID uuid.UUID) error
+	CompleteOrder(ctx context.Context, orderID uuid.UUID) error
 }

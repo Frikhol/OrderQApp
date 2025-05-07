@@ -12,7 +12,7 @@ service OrderService {
     rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
     rpc GetOrderById(GetOrderByIdRequest) returns (GetOrderByIdResponse) {}
     rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {}
-    rpc FinishOrder(FinishOrderRequest) returns (FinishOrderResponse) {}
+    rpc CompleteOrder(CompleteOrderRequest) returns (CompleteOrderResponse) {}
 }
 
 // Common Order message used in responses
@@ -67,10 +67,10 @@ message CancelOrderResponse {
     bool success = 1;
 }
 
-message FinishOrderRequest {
+message CompleteOrderRequest {
     string order_id = 1;
 }
 
-message FinishOrderResponse {
+message CompleteOrderResponse {
     bool success = 1;
 }

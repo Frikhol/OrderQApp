@@ -192,3 +192,35 @@ func (p *PostgresDB) GetOrderById(ctx context.Context, orderID uuid.UUID) (*infr
 
 	return &order, nil
 }
+
+func (p *PostgresDB) CancelOrder(ctx context.Context, orderID uuid.UUID) error {
+	query := `
+	UPDATE orders
+	SET order_status = 'cancelled'
+	WHERE order_id = $1
+	`
+
+	_, err := p.Db.Exec(ctx, query, orderID)
+	if err != nil {
+		p.Logger.Error("failed to cancel order", zap.Error(err))
+		return fmt.Errorf("failed to cancel order: %w", err)
+	}
+
+	return nil
+}
+
+func (p *PostgresDB) CompleteOrder(ctx context.Context, orderID uuid.UUID) error {
+	query := `
+	UPDATE orders
+	SET order_status = 'completed'
+	WHERE order_id = $1
+	`
+
+	_, err := p.Db.Exec(ctx, query, orderID)
+	if err != nil {
+		p.Logger.Error("failed to complete order", zap.Error(err))
+		return fmt.Errorf("failed to complete order: %w", err)
+	}
+
+	return nil
+}

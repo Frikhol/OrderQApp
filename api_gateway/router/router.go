@@ -31,4 +31,6 @@ func InitRoutes(authClient auth_service.AuthServiceClient, orderClient order_ser
 	web.Router("/api/orders/create", &controllers.OrderController{OrderClient: orderClient}, "post:CreateOrder")
 	web.Router("/api/orders/list", &controllers.OrderController{OrderClient: orderClient}, "post:GetOrdersList")
 	web.Router("/api/orders/:id", &controllers.OrderController{OrderClient: orderClient}, "post:GetOrderById")
+	web.Router("/api/orders/:id/cancel", &controllers.OrderController{OrderClient: orderClient}, "post:CancelOrder")
+	web.Router("/api/orders/:id/complete", &controllers.OrderController{OrderClient: orderClient}, "post:CompleteOrder")
 }

@@ -8,6 +8,7 @@ import (
 	"order_service/internal/config"
 	"order_service/internal/infra"
 
+	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 	"go.uber.org/zap"
 )
@@ -92,7 +93,7 @@ func (r *RabbitMQ) Close() error {
 	return r.conn.Close()
 }
 
-func (r *RabbitMQ) PublishCreatedOrder(ctx context.Context, order *infra.Order) error {
+func (r *RabbitMQ) PublishOrderCreated(ctx context.Context, order *infra.Order) error {
 	body, err := json.Marshal(order)
 	if err != nil {
 		return fmt.Errorf("json.Marshal: %w", err)
@@ -107,5 +108,35 @@ func (r *RabbitMQ) PublishCreatedOrder(ctx context.Context, order *infra.Order) 
 			ContentType: "application/json",
 			Body:        body,
 		},
+	)
+}
+
+func (r *RabbitMQ) PublishOrderCancelled(ctx context.Context, orderID uuid.UUID) error {
+	body, err := json.Marshal(orderID)
+	if err != nil {
+		return fmt.Errorf("json.Marshal: %w", err)
+	}
+
+	return r.ch.Publish(
+		OrderEventExchange,
+		"order.cancelled",
+		false,
+		false,
+		amqp.Publishing{Body: body},
+	)
+}
+
+func (r *RabbitMQ) PublishOrderCompleted(ctx context.Context, orderID uuid.UUID) error {
+	body, err := json.Marshal(orderID)
+	if err != nil {
+		return fmt.Errorf("json.Marshal: %w", err)
+	}
+
+	return r.ch.Publish(
+		OrderEventExchange,
+		"order.completed",
+		false,
+		false,
+		amqp.Publishing{Body: body},
 	)
 }

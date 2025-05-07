@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const secondsInput = document.getElementById('seconds');
     const timeGapHidden = document.getElementById('orderTimeGap');
     
+    // Get order details section elements
+    const orderDetailsSection = document.getElementById('orderDetailsSection');
+    const backToListBtn = document.getElementById('backToList');
+    const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+    const finishOrderBtn = document.getElementById('finishOrderBtn');
+    let currentOrderId = null;
+    
     // Add event listeners to time inputs to update the hidden field
     [hoursInput, minutesInput, secondsInput].forEach(input => {
         input.addEventListener('change', updateTimeGapValue);
@@ -50,11 +57,13 @@ document.addEventListener('DOMContentLoaded', function() {
     createFormBtn.addEventListener('click', function() {
         createFormContainer.style.display = 'block';
         ordersListContainer.style.display = 'none';
+        orderDetailsSection.style.display = 'none';
     });
 
     listOrdersBtn.addEventListener('click', function() {
         createFormContainer.style.display = 'none';
         ordersListContainer.style.display = 'block';
+        orderDetailsSection.style.display = 'none';
         loadOrders();
     });
 
@@ -101,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'signed':
                 return 'In Progress';
             case 'cancelled':
-            case 'canceled':
                 return 'Cancelled';
             case 'finished':
                 return 'Completed';
@@ -198,9 +206,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         <div class="card-footer bg-white">
-                            <button class="btn btn-outline-success w-100 view-order-btn" data-order-id="${order.order_id}">
-                                <i class="fas fa-eye me-1"></i> View Details
-                            </button>
+                            <div class="d-grid">
+                                <button class="btn btn-outline-success view-order-btn" data-order-id="${order.order_id}">
+                                    <i class="fas fa-eye me-1"></i> View Details
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -229,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to view order details
     function viewOrderDetails(orderId) {
+        currentOrderId = orderId;
         fetch(`/api/orders/${orderId}`, {
             method: 'POST',
             headers: {
@@ -248,12 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const order = data.order;
+            if (!order) {
+                alert('Error: Order not found');
+                return;
+            }
+
             const formattedDate = formatDate(order.order_date);
             const statusText = getStatusText(order.order_status);
             
+            // Convert time gap (duration) to hours, minutes and seconds
             let timeGap = '';
             if (order.order_time_gap) {
-                const seconds = parseInt(order.order_time_gap.seconds);
+                const seconds = Math.floor(order.order_time_gap / 1000000000); // Convert nanoseconds to seconds
                 const hours = Math.floor(seconds / 3600);
                 const minutes = Math.floor((seconds % 3600) / 60);
                 const remainingSeconds = seconds % 60;
@@ -267,17 +284,93 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (remainingSeconds > 0) {
                     timeGap += `${(hours > 0 || minutes > 0) ? ' ' : ''}${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}`;
                 }
+                
+                if (timeGap === '') {
+                    timeGap = '0 seconds';
+                }
+            } else {
+                timeGap = 'Not specified';
             }
+
+            // Create order details HTML
+            const orderDetailsHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Order Details</h2>
+                    <button class="btn btn-outline-secondary" id="backToList">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                    </button>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mx-auto">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${order.order_location || 'Not specified'}</h5>
+                                <h6 class="card-subtitle mb-3 text-muted">${order.order_address || 'Not specified'}</h6>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-calendar-alt text-success me-2"></i>
+                                    <span>${formattedDate}</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-clock text-success me-2"></i>
+                                    <span>${timeGap}</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-tag text-success me-2"></i>
+                                    <span class="badge bg-${getStatusBadgeColor(order.order_status)}">${statusText}</span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="d-grid gap-2">
+                                    ${order.order_status !== 'cancelled' ? `
+                                        <button type="button" class="btn btn-outline-danger" id="cancelOrderBtn">
+                                            <i class="fas fa-times-circle me-2"></i>Cancel Order
+                                        </button>
+                                    ` : ''}
+                                    ${order.order_status === 'active' ? `
+                                        <button type="button" class="btn btn-outline-primary" id="finishOrderBtn">
+                                            <i class="fas fa-check-circle me-2"></i>Finish Order
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Update the order details section
+            orderDetailsSection.innerHTML = orderDetailsHTML;
             
-            // Show order details
-            alert(`Order Details:
-Location: ${order.order_location || 'Not specified'}
-Address: ${order.order_address || 'Not specified'}
-Date: ${formattedDate}
-Time needed: ${timeGap || 'Not specified'}
-Status: ${statusText}`);
+            // Add event listeners for buttons
+            document.getElementById('backToList').addEventListener('click', function() {
+                orderDetailsSection.style.display = 'none';
+                ordersListContainer.style.display = 'block';
+            });
+
+            const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+            if (cancelOrderBtn) {
+                cancelOrderBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to cancel this order?')) {
+                        cancelOrder(currentOrderId);
+                    }
+                });
+            }
+
+            const finishOrderBtn = document.getElementById('finishOrderBtn');
+            if (finishOrderBtn) {
+                finishOrderBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to mark this order as finished?')) {
+                        finishOrder(currentOrderId);
+                    }
+                });
+            }
+
+            // Show order details section and hide orders list
+            ordersListContainer.style.display = 'none';
+            orderDetailsSection.style.display = 'block';
         })
         .catch(error => {
+            console.error('Error in viewOrderDetails:', error);
             alert('Error: ' + error.message);
         });
     }
@@ -387,6 +480,66 @@ Status: ${statusText}`);
             errorAlert.style.display = 'block';
         });
     });
+
+    // Function to cancel an order
+    function cancelOrder(orderId) {
+        fetch(`/api/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to cancel order');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            alert('Order cancelled successfully');
+            // Go back to orders list and refresh
+            orderDetailsSection.style.display = 'none';
+            ordersListContainer.style.display = 'block';
+            loadOrders();
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
+
+    // Function to finish an order
+    function finishOrder(orderId) {
+        fetch(`/api/orders/${orderId}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to finish order');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            alert('Order marked as finished');
+            // Go back to orders list and refresh
+            orderDetailsSection.style.display = 'none';
+            ordersListContainer.style.display = 'block';
+            loadOrders();
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
 
     // Show order list by default
     listOrdersBtn.click();

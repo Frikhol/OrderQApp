@@ -1,5 +1,7 @@
 package interfaces
 
 type Service interface {
-	HandleMessages() error
+	HandleOrderCreatedMessages() error
+	HandleOrderCancelledMessages() error
+	HandleOrderCompletedMessages() error
 }

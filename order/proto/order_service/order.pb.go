@@ -500,27 +500,27 @@ func (x *CancelOrderResponse) GetSuccess() bool {
 	return false
 }
 
-type FinishOrderRequest struct {
+type CompleteOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FinishOrderRequest) Reset() {
-	*x = FinishOrderRequest{}
+func (x *CompleteOrderRequest) Reset() {
+	*x = CompleteOrderRequest{}
 	mi := &file_order_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FinishOrderRequest) String() string {
+func (x *CompleteOrderRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FinishOrderRequest) ProtoMessage() {}
+func (*CompleteOrderRequest) ProtoMessage() {}
 
-func (x *FinishOrderRequest) ProtoReflect() protoreflect.Message {
+func (x *CompleteOrderRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_order_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -532,39 +532,39 @@ func (x *FinishOrderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FinishOrderRequest.ProtoReflect.Descriptor instead.
-func (*FinishOrderRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CompleteOrderRequest.ProtoReflect.Descriptor instead.
+func (*CompleteOrderRequest) Descriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *FinishOrderRequest) GetOrderId() string {
+func (x *CompleteOrderRequest) GetOrderId() string {
 	if x != nil {
 		return x.OrderId
 	}
 	return ""
 }
 
-type FinishOrderResponse struct {
+type CompleteOrderResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FinishOrderResponse) Reset() {
-	*x = FinishOrderResponse{}
+func (x *CompleteOrderResponse) Reset() {
+	*x = CompleteOrderResponse{}
 	mi := &file_order_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FinishOrderResponse) String() string {
+func (x *CompleteOrderResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FinishOrderResponse) ProtoMessage() {}
+func (*CompleteOrderResponse) ProtoMessage() {}
 
-func (x *FinishOrderResponse) ProtoReflect() protoreflect.Message {
+func (x *CompleteOrderResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_order_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -576,12 +576,12 @@ func (x *FinishOrderResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FinishOrderResponse.ProtoReflect.Descriptor instead.
-func (*FinishOrderResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CompleteOrderResponse.ProtoReflect.Descriptor instead.
+func (*CompleteOrderResponse) Descriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *FinishOrderResponse) GetSuccess() bool {
+func (x *CompleteOrderResponse) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
@@ -622,17 +622,17 @@ const file_order_proto_rawDesc = "" +
 	"\x12CancelOrderRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\"/\n" +
 	"\x13CancelOrderResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"/\n" +
-	"\x12FinishOrderRequest\x12\x19\n" +
-	"\border_id\x18\x01 \x01(\tR\aorderId\"/\n" +
-	"\x13FinishOrderResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xc3\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"1\n" +
+	"\x14CompleteOrderRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\"1\n" +
+	"\x15CompleteOrderResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xc9\x03\n" +
 	"\fOrderService\x12V\n" +
 	"\vCreateOrder\x12!.order_service.CreateOrderRequest\x1a\".order_service.CreateOrderResponse\"\x00\x12P\n" +
 	"\tGetOrders\x12\x1f.order_service.GetOrdersRequest\x1a .order_service.GetOrdersResponse\"\x00\x12Y\n" +
 	"\fGetOrderById\x12\".order_service.GetOrderByIdRequest\x1a#.order_service.GetOrderByIdResponse\"\x00\x12V\n" +
-	"\vCancelOrder\x12!.order_service.CancelOrderRequest\x1a\".order_service.CancelOrderResponse\"\x00\x12V\n" +
-	"\vFinishOrder\x12!.order_service.FinishOrderRequest\x1a\".order_service.FinishOrderResponse\"\x00B#Z!order_service/proto/order_serviceb\x06proto3"
+	"\vCancelOrder\x12!.order_service.CancelOrderRequest\x1a\".order_service.CancelOrderResponse\"\x00\x12\\\n" +
+	"\rCompleteOrder\x12#.order_service.CompleteOrderRequest\x1a$.order_service.CompleteOrderResponse\"\x00B#Z!order_service/proto/order_serviceb\x06proto3"
 
 var (
 	file_order_proto_rawDescOnce sync.Once
@@ -657,8 +657,8 @@ var file_order_proto_goTypes = []any{
 	(*GetOrderByIdResponse)(nil),  // 6: order_service.GetOrderByIdResponse
 	(*CancelOrderRequest)(nil),    // 7: order_service.CancelOrderRequest
 	(*CancelOrderResponse)(nil),   // 8: order_service.CancelOrderResponse
-	(*FinishOrderRequest)(nil),    // 9: order_service.FinishOrderRequest
-	(*FinishOrderResponse)(nil),   // 10: order_service.FinishOrderResponse
+	(*CompleteOrderRequest)(nil),  // 9: order_service.CompleteOrderRequest
+	(*CompleteOrderResponse)(nil), // 10: order_service.CompleteOrderResponse
 	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
 	(*durationpb.Duration)(nil),   // 12: google.protobuf.Duration
 }
@@ -673,12 +673,12 @@ var file_order_proto_depIdxs = []int32{
 	3,  // 7: order_service.OrderService.GetOrders:input_type -> order_service.GetOrdersRequest
 	5,  // 8: order_service.OrderService.GetOrderById:input_type -> order_service.GetOrderByIdRequest
 	7,  // 9: order_service.OrderService.CancelOrder:input_type -> order_service.CancelOrderRequest
-	9,  // 10: order_service.OrderService.FinishOrder:input_type -> order_service.FinishOrderRequest
+	9,  // 10: order_service.OrderService.CompleteOrder:input_type -> order_service.CompleteOrderRequest
 	2,  // 11: order_service.OrderService.CreateOrder:output_type -> order_service.CreateOrderResponse
 	4,  // 12: order_service.OrderService.GetOrders:output_type -> order_service.GetOrdersResponse
 	6,  // 13: order_service.OrderService.GetOrderById:output_type -> order_service.GetOrderByIdResponse
 	8,  // 14: order_service.OrderService.CancelOrder:output_type -> order_service.CancelOrderResponse
-	10, // 15: order_service.OrderService.FinishOrder:output_type -> order_service.FinishOrderResponse
+	10, // 15: order_service.OrderService.CompleteOrder:output_type -> order_service.CompleteOrderResponse
 	11, // [11:16] is the sub-list for method output_type
 	6,  // [6:11] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name

@@ -42,7 +42,21 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	}()
 
 	go func() {
-		err := impl.New(logger, broker).HandleMessages()
+		err := impl.New(logger, broker).HandleOrderCreatedMessages()
+		if err != nil {
+			logger.Error("failed to handle messages", zap.Error(err))
+		}
+	}()
+
+	go func() {
+		err := impl.New(logger, broker).HandleOrderCancelledMessages()
+		if err != nil {
+			logger.Error("failed to handle messages", zap.Error(err))
+		}
+	}()
+
+	go func() {
+		err := impl.New(logger, broker).HandleOrderCompletedMessages()
 		if err != nil {
 			logger.Error("failed to handle messages", zap.Error(err))
 		}

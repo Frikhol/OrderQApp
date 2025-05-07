@@ -66,11 +66,11 @@ func (s *OrderService) CancelOrder(ctx context.Context, req *pb.CancelOrderReque
 	return &pb.CancelOrderResponse{Success: true}, nil
 }
 
-func (s *OrderService) FinishOrder(ctx context.Context, req *pb.FinishOrderRequest) (*pb.FinishOrderResponse, error) {
-	err := s.service.FinishOrder(ctx, uuid.MustParse(req.GetOrderId()))
+func (s *OrderService) CompleteOrder(ctx context.Context, req *pb.CompleteOrderRequest) (*pb.CompleteOrderResponse, error) {
+	err := s.service.CompleteOrder(ctx, uuid.MustParse(req.GetOrderId()))
 	if err != nil {
-		return &pb.FinishOrderResponse{Success: false}, status.Errorf(codes.Internal, "finish order failed: %v", err)
+		return &pb.CompleteOrderResponse{Success: false}, status.Errorf(codes.Internal, "complete order failed: %v", err)
 	}
 
-	return &pb.FinishOrderResponse{Success: true}, nil
+	return &pb.CompleteOrderResponse{Success: true}, nil
 }
