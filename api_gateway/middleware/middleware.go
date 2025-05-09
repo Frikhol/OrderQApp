@@ -9,7 +9,7 @@ import (
 	"github.com/beego/beego/v2/server/web/context"
 )
 
-func JWTAuthMiddleware(authClient auth_service.AuthServiceClient) func(ctx *context.Context) {
+func JWTAuthMiddleware(authClient auth_service.AuthServiceClient, role string) func(ctx *context.Context) {
 	return func(ctx *context.Context) {
 		// Get the Authorization header
 		authHeader := ctx.Input.Header("Authorization")
@@ -48,6 +48,13 @@ func JWTAuthMiddleware(authClient auth_service.AuthServiceClient) func(ctx *cont
 			return
 		}
 
+		if validateResp.Role != role {
+			ctx.Output.SetStatus(http.StatusUnauthorized)
+			ctx.Output.Body([]byte("Unauthorized"))
+			return
+		}
+
 		ctx.Input.SetData("user_id", validateResp.UserId)
+		ctx.Input.SetData("role", validateResp.Role)
 	}
 }

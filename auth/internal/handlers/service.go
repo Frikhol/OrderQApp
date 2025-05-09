@@ -35,9 +35,17 @@ func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 }
 
 func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
-	user_id, err := s.service.ValidateToken(ctx, req.Token)
+	user, role, err := s.service.ValidateToken(ctx, req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid token")
 	}
-	return &pb.ValidateTokenResponse{Success: true, UserId: user_id}, nil
+	return &pb.ValidateTokenResponse{Success: true, UserId: user, Role: role}, nil
+}
+
+func (s *AuthService) AgentLogin(ctx context.Context, req *pb.AgentLoginRequest) (*pb.AgentLoginResponse, error) {
+	token, err := s.service.AgentLogin(ctx, req.Email, req.Password)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials: %v", err)
+	}
+	return &pb.AgentLoginResponse{Token: token}, nil
 }

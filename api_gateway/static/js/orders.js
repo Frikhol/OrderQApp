@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ordersContainer.innerHTML = '';
 
         fetch('/api/orders/list', {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function viewOrderDetails(orderId) {
         currentOrderId = orderId;
         fetch(`/api/orders/${orderId}`, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }

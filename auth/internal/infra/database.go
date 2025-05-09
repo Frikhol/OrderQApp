@@ -44,7 +44,7 @@ func (p *PostgresDB) Close() error {
 }
 
 func (p *PostgresDB) UserExists(ctx context.Context, email string) error {
-	query := `SELECT COUNT(*) FROM users WHERE email = $1`
+	query := `SELECT COUNT(*) FROM users WHERE email = $1 AND role = 'client'`
 	var count int
 	err := p.Db.QueryRowContext(ctx, query, email).Scan(&count)
 	if err != nil {
@@ -65,17 +65,29 @@ func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-
-	query := `SELECT id, email, password FROM users WHERE email = $1`
+func (p *PostgresDB) GetClientByEmail(ctx context.Context, email string) (*User, error) {
+	query := `SELECT id, email, password, role FROM users WHERE email = $1 AND role = 'client'`
 	var user User
-	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password)
+	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("user not found")
+			return nil, errors.New("client not found")
 		}
 		return nil, fmt.Errorf("database error: %w", err)
 	}
 
+	return &user, nil
+}
+
+func (p *PostgresDB) GetAgentByEmail(ctx context.Context, email string) (*User, error) {
+	query := `SELECT id, email, password, role FROM users WHERE email = $1 AND role = 'agent'`
+	var user User
+	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("agent not found")
+		}
+		return nil, fmt.Errorf("database error: %w", err)
+	}
 	return &user, nil
 }
