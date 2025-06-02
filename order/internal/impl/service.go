@@ -40,14 +40,26 @@ func (s *service) CreateOrder(ctx context.Context, order *infra.Order) error {
 	return nil
 }
 
-func (s *service) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
+func (s *service) GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
 	s.logger.Info("Getting orders", zap.String("userID", userID.String()))
-	orders, err := s.db.GetOrders(ctx, userID)
+	orders, err := s.db.GetUserOrders(ctx, userID)
 	if err != nil {
 		s.logger.Error("Failed to get orders", zap.Error(err))
 		return nil, err
 	}
 	s.logger.Info("Orders found", zap.Any("orders", orders))
+
+	return orders, nil
+}
+
+func (s *service) GetAvailableOrders(ctx context.Context) ([]*infra.Order, error) {
+	s.logger.Info("Getting available orders")
+	orders, err := s.db.GetAvailableOrders(ctx)
+	if err != nil {
+		s.logger.Error("Failed to get available orders", zap.Error(err))
+		return nil, err
+	}
+	s.logger.Info("Available orders found", zap.Any("orders", orders))
 
 	return orders, nil
 }

@@ -13,6 +13,7 @@ func ToPbOrder(order *infra.Order) *pb.Order {
 	return &pb.Order{
 		OrderId:       order.OrderID.String(),
 		UserId:        order.UserID.String(),
+		AgentId:       order.AgentID.String(),
 		OrderAddress:  order.OrderAddress,
 		OrderLocation: order.OrderLocation,
 		OrderDate:     timestamppb.New(order.OrderDate),
@@ -25,6 +26,7 @@ func ToInfraOrder(order *pb.Order) *infra.Order {
 	return &infra.Order{
 		OrderID:       uuid.MustParse(order.OrderId), //FIXME: change to parse
 		UserID:        uuid.MustParse(order.UserId),  //FIXME: change to parse
+		AgentID:       uuid.MustParse(order.AgentId), //FIXME: change to parse
 		OrderAddress:  order.OrderAddress,
 		OrderLocation: order.OrderLocation,
 		OrderDate:     order.OrderDate.AsTime(),

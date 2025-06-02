@@ -22,7 +22,7 @@ func (c *OrderController) GetOrdersPage() {
 func (c *OrderController) GetOrdersList() {
 	userID := c.Ctx.Input.GetData("user_id").(string)
 
-	orders, err := c.OrderClient.GetOrders(c.Ctx.Request.Context(), &order_service.GetOrdersRequest{
+	orders, err := c.OrderClient.GetUserOrders(c.Ctx.Request.Context(), &order_service.GetUserOrdersRequest{
 		UserId: userID,
 	})
 	if err != nil {

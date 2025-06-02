@@ -41,11 +41,3 @@ func (s *AuthService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRe
 	}
 	return &pb.ValidateTokenResponse{Success: true, UserId: user, Role: role}, nil
 }
-
-func (s *AuthService) AgentLogin(ctx context.Context, req *pb.AgentLoginRequest) (*pb.AgentLoginResponse, error) {
-	token, err := s.service.AgentLogin(ctx, req.Email, req.Password)
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials: %v", err)
-	}
-	return &pb.AgentLoginResponse{Token: token}, nil
-}

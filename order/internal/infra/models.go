@@ -9,6 +9,7 @@ import (
 type Order struct {
 	OrderID       uuid.UUID     `json:"order_id"`
 	UserID        uuid.UUID     `json:"user_id"`
+	AgentID       uuid.UUID     `json:"agent_id"`
 	OrderAddress  string        `json:"order_address"`
 	OrderLocation string        `json:"order_location"`
 	OrderDate     time.Time     `json:"order_date"`

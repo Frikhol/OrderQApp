@@ -9,7 +9,8 @@ import (
 
 type Service interface {
 	CreateOrder(ctx context.Context, order *infra.Order) error
-	GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error)
+	GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error)
+	GetAvailableOrders(ctx context.Context) ([]*infra.Order, error)
 	GetOrderById(ctx context.Context, orderID uuid.UUID) (*infra.Order, error)
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	CompleteOrder(ctx context.Context, orderID uuid.UUID) error

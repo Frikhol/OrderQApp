@@ -8,21 +8,11 @@ service AuthService {
     rpc Login(LoginRequest) returns (LoginResponse) {}
     rpc Register(RegisterRequest) returns (RegisterResponse) {}
     rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {}
-    rpc AgentLogin(AgentLoginRequest) returns (AgentLoginResponse) {}
 }
 
 message LoginRequest {
     string email = 1;
     string password = 2;
-}
-
-message AgentLoginRequest {
-    string email = 1;
-    string password = 2;
-}
-
-message AgentLoginResponse {
-    string token = 1;
 }
 
 message LoginResponse {

@@ -9,7 +9,6 @@ import (
 type AgentController struct {
 	web.Controller
 	OrderClient order_service.OrderServiceClient
-	//AgentClient agent_service.AgentServiceClient
 }
 
 func (c *AgentController) GetOrdersPage() {
@@ -17,7 +16,15 @@ func (c *AgentController) GetOrdersPage() {
 }
 
 func (c *AgentController) StartSearch() {
-	//TODO: implement
+	orders, err := c.OrderClient.GetAvailableOrders(c.Ctx.Request.Context(), &order_service.GetAvailableOrdersRequest{})
+	if err != nil {
+		c.Data["json"] = map[string]string{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	c.Data["json"] = orders
+	c.ServeJSON()
 }
 
 func (c *AgentController) StopSearch() {

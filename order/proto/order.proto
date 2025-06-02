@@ -9,7 +9,8 @@ import "google/protobuf/duration.proto";
 
 service OrderService {
     rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {}
-    rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
+    rpc GetUserOrders(GetUserOrdersRequest) returns (GetUserOrdersResponse) {}
+    rpc GetAvailableOrders(GetAvailableOrdersRequest) returns (GetAvailableOrdersResponse) {}
     rpc GetOrderById(GetOrderByIdRequest) returns (GetOrderByIdResponse) {}
     rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {}
     rpc CompleteOrder(CompleteOrderRequest) returns (CompleteOrderResponse) {}
@@ -19,11 +20,12 @@ service OrderService {
 message Order {
     string order_id = 1;
     string user_id = 2;
-    string order_address = 3;
-    string order_location = 4;
-    google.protobuf.Timestamp order_date = 5;
-    google.protobuf.Duration order_time_gap = 6;
-    string order_status = 7; // "pending", "active", "finished", "cancelled"
+    string agent_id = 3;
+    string order_address = 4;
+    string order_location = 5;
+    google.protobuf.Timestamp order_date = 6;
+    google.protobuf.Duration order_time_gap = 7;
+    string order_status = 8; // "pending", "active", "finished", "cancelled"
 }
 
 message CreateOrderRequest {
@@ -39,14 +41,22 @@ message CreateOrderResponse {
     bool success = 1;
 }
 
-message GetOrdersRequest {
+message GetUserOrdersRequest {
     string user_id = 1;
     // string status = 2; // Optional filter by status
     // int32 limit = 3; // Limit number of orders to return
     // int32 offset = 4; // For pagination
 }
 
-message GetOrdersResponse {
+message GetUserOrdersResponse {
+    repeated Order orders = 1;
+}
+
+message GetAvailableOrdersRequest {
+    string status = 1;
+}
+
+message GetAvailableOrdersResponse {
     repeated Order orders = 1;
 }
 

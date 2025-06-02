@@ -38,17 +38,17 @@ func (s *service) Login(ctx context.Context, email string, password string) (str
 
 	s.logger.Info("attempting login", zap.String("email", email))
 
-	//get client directly without checking existence first
-	client, err := s.db.GetClientByEmail(ctx, email)
+	//get user directly without checking existence first
+	user, err := s.db.GetUserByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("failed to get client", zap.Error(err))
-		return "", errors.New("no such client")
+		s.logger.Error("failed to get user", zap.Error(err))
+		return "", errors.New("no such user")
 	}
 
-	s.logger.Info("client found, checking password", zap.String("email", client.Email), zap.String("password", client.Password))
+	s.logger.Info("user found, checking password", zap.String("email", user.Email), zap.String("password", user.Password))
 
 	//check password
-	if err := bcrypt.CompareHashAndPassword([]byte(client.Password), []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		s.logger.Error("password comparison failed", zap.Error(err))
 		return "", errors.New("invalid password")
 	}
@@ -57,52 +57,8 @@ func (s *service) Login(ctx context.Context, email string, password string) (str
 
 	//create token
 	claims := jwt.MapClaims{
-		"user_id": client.ID,
-		"role":    client.Role,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(s.secret))
-	if err != nil {
-		s.logger.Error("failed to create token", zap.Error(err))
-		return "", errors.New("failed to create token")
-	}
-
-	s.logger.Info("login successful", zap.String("email", email))
-	return tokenString, nil
-}
-
-func (s *service) AgentLogin(ctx context.Context, email string, password string) (string, error) {
-	//empty check
-	if email == "" || password == "" {
-		s.logger.Error("email or password is empty")
-		return "", errors.New("email and password are required")
-	}
-
-	//email check
-	if !strings.Contains(email, "@") {
-		s.logger.Error("invalid email format", zap.String("email", email))
-		return "", errors.New("invalid email")
-	}
-
-	//get agent directly without checking existence first
-	agent, err := s.db.GetAgentByEmail(ctx, email)
-	if err != nil {
-		s.logger.Error("failed to get agent", zap.Error(err))
-		return "", errors.New("no such agent")
-	}
-
-	s.logger.Info("agent found, checking password", zap.String("email", agent.Email), zap.String("password", agent.Password))
-
-	//check password
-	if err := bcrypt.CompareHashAndPassword([]byte(agent.Password), []byte(password)); err != nil {
-		s.logger.Error("password comparison failed", zap.Error(err))
-		return "", errors.New("invalid password")
-	}
-	//create token
-	claims := jwt.MapClaims{
-		"user_id": agent.ID,
-		"role":    agent.Role,
+		"user_id": user.ID,
+		"role":    user.Role,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

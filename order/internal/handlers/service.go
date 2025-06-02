@@ -39,13 +39,22 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 	return &pb.CreateOrderResponse{Success: true}, nil
 }
 
-func (s *OrderService) GetOrders(ctx context.Context, req *pb.GetOrdersRequest) (*pb.GetOrdersResponse, error) {
-	orders, err := s.service.GetOrders(ctx, uuid.MustParse(req.GetUserId()))
+func (s *OrderService) GetUserOrders(ctx context.Context, req *pb.GetUserOrdersRequest) (*pb.GetUserOrdersResponse, error) {
+	orders, err := s.service.GetUserOrders(ctx, uuid.MustParse(req.GetUserId()))
 	if err != nil {
-		return &pb.GetOrdersResponse{Orders: nil}, status.Errorf(codes.Internal, "get orders failed: %v", err)
+		return &pb.GetUserOrdersResponse{Orders: nil}, status.Errorf(codes.Internal, "get orders failed: %v", err)
 	}
 
-	return &pb.GetOrdersResponse{Orders: mapper.ToPbOrders(orders)}, nil
+	return &pb.GetUserOrdersResponse{Orders: mapper.ToPbOrders(orders)}, nil
+}
+
+func (s *OrderService) GetAvailableOrders(ctx context.Context, req *pb.GetAvailableOrdersRequest) (*pb.GetAvailableOrdersResponse, error) {
+	orders, err := s.service.GetAvailableOrders(ctx)
+	if err != nil {
+		return &pb.GetAvailableOrdersResponse{Orders: nil}, status.Errorf(codes.Internal, "get orders failed: %v", err)
+	}
+
+	return &pb.GetAvailableOrdersResponse{Orders: mapper.ToPbOrders(orders)}, nil
 }
 
 func (s *OrderService) GetOrderById(ctx context.Context, req *pb.GetOrderByIdRequest) (*pb.GetOrderByIdResponse, error) {

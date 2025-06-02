@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS orders (
     order_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
+    agent_id UUID NOT NULL,
     order_address TEXT NOT NULL,
     order_location TEXT NOT NULL,
     order_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),

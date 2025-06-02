@@ -59,6 +59,7 @@ func (p *PostgresDB) GetCurrentOrder(ctx context.Context, userID uuid.UUID) (*in
 	SELECT
 		order_id,
 		user_id,
+		agent_id,
 		order_address,
 		order_location,
 		order_date,
@@ -71,6 +72,7 @@ func (p *PostgresDB) GetCurrentOrder(ctx context.Context, userID uuid.UUID) (*in
 	var order infra.Order
 	if err := p.Db.QueryRow(ctx, query, userID).Scan(&order.OrderID,
 		&order.UserID,
+		&order.AgentID,
 		&order.OrderAddress,
 		&order.OrderLocation,
 		&order.OrderDate,
@@ -89,12 +91,13 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 	query := `
 	INSERT INTO orders (
 		user_id, 
+		agent_id,
 		order_address, 
 		order_location, 
 		order_date, 
 		order_time_gap, 
 		order_status
-	) VALUES ($1, $2, $3, $4, $5, $6)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7)
 	RETURNING order_id
 	`
 
@@ -102,6 +105,7 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 		ctx,
 		query,
 		order.UserID,
+		order.AgentID,
 		order.OrderAddress,
 		order.OrderLocation,
 		order.OrderDate,
@@ -117,11 +121,12 @@ func (p *PostgresDB) CreateOrder(ctx context.Context, order *infra.Order) error 
 	return nil
 }
 
-func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
+func (p *PostgresDB) GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*infra.Order, error) {
 	query := `
 	SELECT
 		order_id,
 		user_id,
+		agent_id,
 		order_address,
 		order_location,
 		order_date,
@@ -142,6 +147,54 @@ func (p *PostgresDB) GetOrders(ctx context.Context, userID uuid.UUID) ([]*infra.
 		var order infra.Order
 		if err := rows.Scan(&order.OrderID,
 			&order.UserID,
+			&order.AgentID,
+			&order.OrderAddress,
+			&order.OrderLocation,
+			&order.OrderDate,
+			&order.OrderTimeGap,
+			&order.OrderStatus,
+		); err != nil {
+			p.Logger.Error("failed to scan order", zap.Error(err))
+			return nil, fmt.Errorf("failed to scan order: %w", err)
+		}
+		orders = append(orders, &order)
+	}
+
+	if err := rows.Err(); err != nil {
+		p.Logger.Error("failed to iterate over orders", zap.Error(err))
+		return nil, fmt.Errorf("failed to iterate over orders: %w", err)
+	}
+
+	return orders, nil
+}
+
+func (p *PostgresDB) GetAvailableOrders(ctx context.Context) ([]*infra.Order, error) {
+	query := `
+	SELECT
+		order_id,
+		user_id,
+		agent_id,
+		order_address,
+		order_location,
+		order_date,
+		order_time_gap,
+		order_status
+	FROM orders
+	WHERE order_status = 'pending'
+	`
+	rows, err := p.Db.Query(ctx, query)
+	if err != nil {
+		p.Logger.Error("failed to get available orders", zap.Error(err))
+		return nil, fmt.Errorf("failed to get available orders: %w", err)
+	}
+	defer rows.Close()
+
+	orders := []*infra.Order{}
+	for rows.Next() {
+		var order infra.Order
+		if err := rows.Scan(&order.OrderID,
+			&order.UserID,
+			&order.AgentID,
 			&order.OrderAddress,
 			&order.OrderLocation,
 			&order.OrderDate,
@@ -167,6 +220,7 @@ func (p *PostgresDB) GetOrderById(ctx context.Context, orderID uuid.UUID) (*infr
 	SELECT
 		order_id,
 		user_id,
+		agent_id,
 		order_address,
 		order_location,
 		order_date,
@@ -178,6 +232,7 @@ func (p *PostgresDB) GetOrderById(ctx context.Context, orderID uuid.UUID) (*infr
 	var order infra.Order
 	if err := p.Db.QueryRow(ctx, query, orderID).Scan(&order.OrderID,
 		&order.UserID,
+		&order.AgentID,
 		&order.OrderAddress,
 		&order.OrderLocation,
 		&order.OrderDate,
