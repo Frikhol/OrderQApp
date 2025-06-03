@@ -1,12 +1,14 @@
 package entrypoint
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"notification_service/internal/config"
 	impl "notification_service/internal/impl"
@@ -92,6 +94,17 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+type Order struct {
+	OrderID       uuid.UUID     `json:"order_id"`
+	UserID        uuid.UUID     `json:"user_id"`
+	AgentID       uuid.UUID     `json:"agent_id"`
+	OrderAddress  string        `json:"order_address"`
+	OrderLocation string        `json:"order_location"`
+	OrderDate     time.Time     `json:"order_date"`
+	OrderTimeGap  time.Duration `json:"order_time_gap"`
+	OrderStatus   string        `json:"order_status"`
+}
+
 func Run(cfg *config.Config, logger *zap.Logger) error {
 
 	broker, err := broker.New(logger, &cfg.RabbitMQ)
@@ -126,9 +139,28 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	}()
 
 	go func() {
-		err := impl.New(logger, broker).HandleOrderCreatedMessages()
+		msgs, err := broker.GetChannel().Consume(
+			"queue_order_cancelled",
+			"",
+			false,
+			false,
+			false,
+			false,
+			nil,
+		)
+
 		if err != nil {
-			logger.Error("failed to handle messages", zap.Error(err))
+			logger.Error("failed to consume messages", zap.Error(err))
+		}
+
+		for msg := range msgs {
+			logger.Info("received cancelled order", zap.String("message", string(msg.Body)))
+			order := Order{}
+			err := json.Unmarshal(msg.Body, &order)
+			if err != nil {
+				logger.Error("failed to unmarshal message", zap.Error(err))
+			}
+			SendNotification(order.UserID, msg.Body)
 		}
 	}()
 
