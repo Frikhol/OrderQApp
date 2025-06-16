@@ -85,7 +85,13 @@ func (s *service) CancelOrder(ctx context.Context, orderID uuid.UUID) error {
 	}
 
 	s.logger.Info("Publishing cancelled order")
-	if err := s.broker.PublishOrderCancelled(ctx, orderID); err != nil {
+	order, err := s.db.GetOrderById(ctx, orderID)
+	if err != nil {
+		s.logger.Error("Failed to get order by ID", zap.Error(err))
+		return err
+	}
+
+	if err := s.broker.PublishOrderCancelled(ctx, order); err != nil {
 		s.logger.Error("Failed to publish cancelled order", zap.Error(err))
 		return err
 	}
@@ -103,7 +109,13 @@ func (s *service) CompleteOrder(ctx context.Context, orderID uuid.UUID) error {
 	}
 
 	s.logger.Info("Publishing completed order")
-	if err := s.broker.PublishOrderCompleted(ctx, orderID); err != nil {
+	order, err := s.db.GetOrderById(ctx, orderID)
+	if err != nil {
+		s.logger.Error("Failed to get order by ID", zap.Error(err))
+		return err
+	}
+
+	if err := s.broker.PublishOrderCompleted(ctx, order); err != nil {
 		s.logger.Error("Failed to publish completed order", zap.Error(err))
 		return err
 	}

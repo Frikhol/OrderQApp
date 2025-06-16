@@ -16,6 +16,8 @@ type OrderController struct {
 }
 
 func (c *OrderController) GetOrdersPage() {
+	userID := c.Ctx.Input.GetData("user_id").(string)
+	c.Data["user_id"] = userID
 	c.TplName = "orders.tpl"
 }
 

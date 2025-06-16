@@ -8,7 +8,6 @@ import (
 	"order_service/internal/config"
 	"order_service/internal/infra"
 
-	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 	"go.uber.org/zap"
 )
@@ -111,8 +110,8 @@ func (r *RabbitMQ) PublishOrderCreated(ctx context.Context, order *infra.Order) 
 	)
 }
 
-func (r *RabbitMQ) PublishOrderCancelled(ctx context.Context, orderID uuid.UUID) error {
-	body, err := json.Marshal(orderID)
+func (r *RabbitMQ) PublishOrderCancelled(ctx context.Context, order *infra.Order) error {
+	body, err := json.Marshal(order)
 	if err != nil {
 		return fmt.Errorf("json.Marshal: %w", err)
 	}
@@ -126,8 +125,8 @@ func (r *RabbitMQ) PublishOrderCancelled(ctx context.Context, orderID uuid.UUID)
 	)
 }
 
-func (r *RabbitMQ) PublishOrderCompleted(ctx context.Context, orderID uuid.UUID) error {
-	body, err := json.Marshal(orderID)
+func (r *RabbitMQ) PublishOrderCompleted(ctx context.Context, order *infra.Order) error {
+	body, err := json.Marshal(order)
 	if err != nil {
 		return fmt.Errorf("json.Marshal: %w", err)
 	}

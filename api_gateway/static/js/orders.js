@@ -1,4 +1,37 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // WebSocket connection
+    const userId = document.getElementById('userId').value;
+    if (userId) {
+        // Create WebSocket connection
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws?user_id=${userId}`;
+        const ws = new WebSocket(wsUrl);
+
+        // Connection opened
+        ws.addEventListener('open', function (event) {
+            console.log('WebSocket connection established');
+        });
+
+        // Listen for messages
+        ws.addEventListener('message', function (event) {
+            console.log('Message from server:', event.data);
+        });
+
+        // // Connection closed
+        // ws.addEventListener('close', function (event) {
+        //     console.log('WebSocket connection closed');
+        //     // Attempt to reconnect after 5 seconds
+        //     setTimeout(() => {
+        //         window.location.reload();
+        //     }, 5000);
+        // });
+
+        // Connection error
+        ws.addEventListener('error', function (event) {
+            console.error('WebSocket error:', event);
+        });
+    }
+
     // Get references to buttons and containers
     const createFormBtn = document.getElementById('showCreateForm');
     const listOrdersBtn = document.getElementById('showOrdersList');

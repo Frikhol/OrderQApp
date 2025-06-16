@@ -63,9 +63,15 @@ func SendNotification(userID uuid.UUID, msg any) {
 }
 
 func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
-	userID := uuid.MustParse(r.URL.Query().Get("user_id"))
-	if userID == uuid.Nil {
+	userIDStr := r.URL.Query().Get("user_id")
+	if userIDStr == "" {
 		http.Error(w, "Missing user_id", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		http.Error(w, "Invalid user_id format", http.StatusBadRequest)
 		return
 	}
 
@@ -91,6 +97,16 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			conn.Close()
 			log.Println("Client disconnected:", userID)
 		}()
+		// Keep connection alive by reading from it
+		for {
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Printf("WebSocket error: %v", err)
+				}
+				break
+			}
+		}
 	}()
 }
 
@@ -155,6 +171,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 
 		for msg := range msgs {
 			logger.Info("received cancelled order", zap.String("message", string(msg.Body)))
+			logger.Info("message", zap.String("message", string(msg.Body)))
 			order := Order{}
 			err := json.Unmarshal(msg.Body, &order)
 			if err != nil {

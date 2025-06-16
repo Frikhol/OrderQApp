@@ -9,6 +9,9 @@
     <link href="/static/css/orders.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Add hidden input for user ID -->
+    <input type="hidden" id="userId" value="{{.user_id}}">
+    
     <div class="hero-section text-center">
         <div class="container">
             <h1 class="display-4 mb-4">Manage Your Orders</h1>
