@@ -44,21 +44,21 @@ func (p *PostgresDB) Close() error {
 }
 
 func (p *PostgresDB) UserExists(ctx context.Context, email string) error {
-	query := `SELECT COUNT(*) FROM users WHERE email = $1`
+	query := `SELECT COUNT(*) FROM users WHERE email = $1 AND role = 'client'`
 	var count int
 	err := p.Db.QueryRowContext(ctx, query, email).Scan(&count)
 	if err != nil {
-		return err
+		return fmt.Errorf("database error: %w", err)
 	}
 	if count == 0 {
 		return errors.New("user does not exist")
 	}
-	return nil
+	return nil // No error means user exists
 }
 
 func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
-	query := `INSERT INTO users (email, password) VALUES ($1, $2)`
-	_, err := p.Db.ExecContext(ctx, query, user.Email, user.Password)
+	query := `INSERT INTO users (email, password, role) VALUES ($1, $2, $3)`
+	_, err := p.Db.ExecContext(ctx, query, user.Email, user.Password, user.Role)
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,15 @@ func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
 }
 
 func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	query := `SELECT email, password FROM users WHERE email = $1`
+	query := `SELECT id, email, password, role FROM users WHERE email = $1`
 	var user User
-	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.Email, &user.Password)
+	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, errors.New("user not found")
+		}
+		return nil, fmt.Errorf("database error: %w", err)
 	}
+
 	return &user, nil
 }

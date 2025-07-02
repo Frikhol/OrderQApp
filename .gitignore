@@ -5,6 +5,14 @@
 /auth/.env.test
 /auth/.env.test.local
 
+/orders/.env
+/orders/.env.local
+/orders/.env.development
+/orders/.env.production
+/orders/.env.test
+/orders/.env.test.local
+
+
 .idea
 
 .vscode

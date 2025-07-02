@@ -1,0 +1,56 @@
+/* Main layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+    background-color: #f8f9fa;
+    padding: 1.5rem 0;
+}
+
+/* Hero section */
+.hero-section {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 80px 0;
+    margin-bottom: 40px;
+}
+
+/* Feature cards */
+.feature-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Authentication buttons */
+.auth-buttons {
+    margin-top: 30px;
+}
+
+.auth-buttons .btn {
+    margin: 0 10px;
+    padding: 10px 30px;
+}
+
+/* Benefit icons */
+.benefit-icon {
+    font-size: 2.5rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+/* Call to action section */
+.cta-section {
+    background-color: #f8f9fa;
+    padding: 60px 0;
+    margin-top: 40px;
+} 

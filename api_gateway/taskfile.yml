@@ -10,11 +10,8 @@ tasks:
                --go_out=paths=source_relative:proto/ \
                --go-grpc_out=paths=source_relative:proto/ \
                --grpc-gateway_out=paths=source_relative:proto/ \
-               --descriptor_set_out=proto/reflect_descriptor.pb \
                --go-grpc_opt=require_unimplemented_servers=false \
                --grpc-gateway_opt=logtostderr=true \
-               --include_imports \
-               --include_source_info \
                $(find proto/ -name "*.proto")
     deps:
       - install-proto-plugins

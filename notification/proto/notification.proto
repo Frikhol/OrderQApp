@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package notification_service;
+
+option go_package = "notification_service/proto/notification_service";
+
+service NotificationService {
+    rpc healthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+    string status = 1;
+}
+    

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth_service;
 
-option go_package = "orderq/internal/auth_service";
+option go_package = "api_gateway/proto/auth_service";
 
 service AuthService {
     rpc Login(LoginRequest) returns (LoginResponse) {}
@@ -26,7 +26,6 @@ message RegisterRequest {
 
 message RegisterResponse {
     bool success = 1;
-    string message = 2;
 }
 
 message ValidateTokenRequest {
@@ -35,7 +34,8 @@ message ValidateTokenRequest {
 
 message ValidateTokenResponse {
     bool success = 1;
-    string message = 2;
+    string user_id = 2;
+    string role = 3;
 }
 
 
