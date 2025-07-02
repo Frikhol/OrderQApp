@@ -1,14 +1,11 @@
 package main
 
 import (
+	"go.uber.org/zap"
 	"log"
-
 	"notification_service/internal/config"
 	"notification_service/internal/entrypoint"
 	"notification_service/internal/logger"
-
-	_ "github.com/lib/pq" // PostgreSQL driver
-	"go.uber.org/zap"
 )
 
 func main() {

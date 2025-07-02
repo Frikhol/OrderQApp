@@ -19,9 +19,9 @@ func main() {
 	shutdownChan := make(chan os.Signal, 1)
 	signal.Notify(shutdownChan, os.Interrupt, syscall.SIGTERM)
 
-	// Start server in a goroutine
+	// Start notification in a goroutine
 	go func() {
-		log.Println("Starting server...")
+		log.Println("Starting notification...")
 
 		AuthConn, err := grpc.NewClient("auth_service:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -59,7 +59,7 @@ func main() {
 
 	// Wait for shutdown signal
 	<-shutdownChan
-	log.Println("Shutting down server...")
+	log.Println("Shutting down notification...")
 
 	log.Println("Server stopped")
 }

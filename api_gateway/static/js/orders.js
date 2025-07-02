@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Listen for messages
         ws.addEventListener('message', function (event) {
-            console.log('Message from server:', event.data);
+            console.log('Message from notification:', event.data);
         });
 
         // // Connection closed

@@ -10,8 +10,13 @@ import (
 )
 
 func InitRoutes(authClient auth_service.AuthServiceClient, orderClient order_service.OrderServiceClient) {
+
+	web.InsertFilter("*", web.BeforeRouter, middleware.PrometheusFilter())
 	// Root route
 	web.Router("/", &controllers.GatewayController{}, "get:GetIndex")
+
+	// Metrics endpoint
+	web.Router("/metrics", &controllers.MetricsController{}, "get:GetMetrics")
 
 	// Auth get routes
 	web.Router("/auth/login", &controllers.AuthController{AuthClient: authClient}, "get:GetLoginPage")

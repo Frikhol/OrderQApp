@@ -107,7 +107,7 @@ func (c *orderServiceClient) CompleteOrder(ctx context.Context, in *CompleteOrde
 	return out, nil
 }
 
-// OrderServiceServer is the server API for OrderService service.
+// OrderServiceServer is the notification API for OrderService service.
 // All implementations should embed UnimplementedOrderServiceServer
 // for forward compatibility.
 type OrderServiceServer interface {

@@ -3,7 +3,7 @@ module api_gateway
 go 1.24.2
 
 require (
-	github.com/beego/beego/v2 v2.3.7
+	github.com/beego/beego/v2 v2.3.8
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.5
 )
