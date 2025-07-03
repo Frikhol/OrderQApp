@@ -7,6 +7,6 @@ func NewAuthClient() *AuthClient {
 	return &AuthClient{}
 }
 
-func (ac *AuthClient) ValidateToken(token string) error {
-	return nil
+func (ac *AuthClient) ValidateToken(token string) (string, error) {
+	return "", nil
 }

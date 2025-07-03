@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"notification_service/internal/config"
 	"notification_service/internal/infra/auth"
-	"notification_service/internal/infra/broker"
+	"notification_service/internal/infra/broker/rabbit"
 	"notification_service/internal/transport/websocket"
 	"os"
 	"os/signal"
@@ -21,7 +21,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	logger.Info("Notification service starting...")
 
 	authClient := auth.NewAuthClient()
-	rabbitClient := broker.NewRabbitClient()
+	rabbitClient := rabbit.NewRabbitClient()
 
 	go func() {
 		http.HandleFunc("/ws", websocket.NewHandler(authClient, rabbitClient).HandleUser)

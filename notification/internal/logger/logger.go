@@ -36,19 +36,6 @@ func NewZapLogger(logLevel string) *zap.Logger {
 		level = zap.NewAtomicLevelAt(zap.PanicLevel)
 	}
 
-	// encoderConfig := zapcore.EncoderConfig{
-	// 	MessageKey:     "message",
-	// 	LevelKey:       "level",
-	// 	TimeKey:        "time",
-	// 	NameKey:        "logger",
-	// 	CallerKey:      "caller",
-	// 	StacktraceKey:  "trace",
-	// 	LineEnding:     zapcore.DefaultLineEnding,
-	// 	EncodeLevel:    zapcore.LowercaseLevelEncoder,
-	// 	EncodeTime:     zapcore.ISO8601TimeEncoder,
-	// 	EncodeDuration: zapcore.SecondsDurationEncoder,
-	// 	EncodeCaller:   zapcore.ShortCallerEncoder,
-	// }
 	encoderConfig := zapcore.EncoderConfig{
 		MessageKey:  "message",
 		LevelKey:    "level",
