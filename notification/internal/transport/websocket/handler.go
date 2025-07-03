@@ -27,10 +27,10 @@ func (h *Handler) HandleUser(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if strings.HasPrefix(authHeader, "Bearer ") {
 		token = strings.TrimPrefix(authHeader, "Bearer ")
-		if token == "" {
-			http.Error(w, "no token provided", http.StatusBadRequest)
-			return
-		}
+	}
+	if token == "" {
+		http.Error(w, "no token provided", http.StatusBadRequest)
+		return
 	}
 
 	//validate token

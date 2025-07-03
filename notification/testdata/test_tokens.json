@@ -1,0 +1,30 @@
+{
+  "valid_tokens": {
+    "test-token-1": "user-1",
+    "test-token-2": "user-2",
+    "test-token-3": "user-3"
+  },
+  "invalid_tokens": [
+    "invalid-token-1",
+    "invalid-token-2",
+    "expired-token",
+    ""
+  ],
+  "test_messages": [
+    {
+      "type": "order_created",
+      "user_id": "user-1",
+      "message": "New order #12345 has been created"
+    },
+    {
+      "type": "order_updated",
+      "user_id": "user-2", 
+      "message": "Order #12345 status changed to 'In Progress'"
+    },
+    {
+      "type": "order_completed",
+      "user_id": "user-1",
+      "message": "Order #12345 has been completed"
+    }
+  ]
+} 
