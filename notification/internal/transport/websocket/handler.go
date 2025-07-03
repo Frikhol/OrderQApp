@@ -46,6 +46,7 @@ func (h *Handler) HandleUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	defer conn.Close()
 
 	//add user to store
 	h.store.Add(userId, conn)

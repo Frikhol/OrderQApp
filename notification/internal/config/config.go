@@ -9,5 +9,6 @@ type Config struct {
 }
 
 type RabbitMQ struct {
-	URL string `envconfig:"URL" default:"amqp://guest:guest@rabbitmq:5672/"`
+	URL   string `envconfig:"URL" default:"amqp://guest:guest@rabbitmq:5672/"`
+	Query string `envconfig:"TODO" required:"true"`
 }
