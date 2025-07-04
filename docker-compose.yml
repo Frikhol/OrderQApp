@@ -151,7 +151,7 @@ services:
     env_file:
       - ./notification/.env
     ports:
-      - "8081:8081"
+      - "8888:8888"
     depends_on:
       rabbitmq:
         condition: service_healthy

@@ -29,6 +29,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	if err != nil {
 		logger.Fatal("grpc.NewClient: ", zap.Error(err))
 	}
+	logger.Info("Grpc connection with auth service established.")
 
 	authClient := auth.NewAuthClient(auth_service.NewAuthServiceClient(AuthConn))
 	rabbitClient := rabbit.NewRabbitClient(cfg.RabbitMQ)
@@ -37,6 +38,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	if err != nil {
 		logger.Fatal("rabbitClient.StartConsuming: ", zap.Error(err))
 	}
+	logger.Info("RabbitMQ consumer started.")
 
 	store := connstore.New()
 
