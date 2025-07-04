@@ -32,8 +32,8 @@ func (r *Client) StartConsuming(ctx context.Context) error {
 	if err := ch.ExchangeDeclare(
 		OrderEventExchange,
 		"topic",
-		true,  // durable
-		false, // auto-delete
+		true,
+		false,
 		false,
 		false,
 		nil,
@@ -54,8 +54,8 @@ func (r *Client) StartConsuming(ctx context.Context) error {
 		for _, queueName := range queues {
 			_, err := ch.QueueDeclare(
 				queueName,
-				true,  // durable
-				false, // auto-delete
+				true,
+				false,
 				false,
 				false,
 				nil,
@@ -64,7 +64,6 @@ func (r *Client) StartConsuming(ctx context.Context) error {
 				return err
 			}
 
-			// Привязка очереди к exchange и routing key
 			if err := ch.QueueBind(
 				queueName,
 				routingKey,
@@ -80,12 +79,12 @@ func (r *Client) StartConsuming(ctx context.Context) error {
 	for _, queues := range orderQueues {
 		for _, queueName := range queues {
 			msgs, err := ch.Consume(
-				queueName, // 👈 имя очереди
-				"",        // consumer tag
-				true,      // auto-ack
-				false,     // exclusive
-				false,     // no-local
-				false,     // no-wait
+				queueName,
+				"",
+				true,
+				false,
+				false,
+				false,
 				nil,
 			)
 			if err != nil {
