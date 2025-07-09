@@ -1,6 +1,7 @@
 package entrypoint
 
 import (
+	impl "auth_service/internal/service/service_impl"
 	"fmt"
 	"net"
 	"os"
@@ -9,7 +10,6 @@ import (
 
 	"auth_service/internal/config"
 	handlers "auth_service/internal/handlers"
-	impl "auth_service/internal/impl"
 	"auth_service/internal/infra"
 	proto "auth_service/proto/auth_service"
 

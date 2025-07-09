@@ -1,8 +1,9 @@
-package impl
+package service_impl
 
 import (
+	infra2 "auth_service/internal/domain/models"
 	"auth_service/internal/infra"
-	"auth_service/internal/interfaces"
+	"auth_service/internal/interfaces/service"
 	"context"
 	"errors"
 	"strings"
@@ -13,13 +14,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type service struct {
+type Service struct {
 	logger *zap.Logger
 	db     *infra.PostgresDB
 	secret string
 }
 
-func New(logger *zap.Logger, db *infra.PostgresDB, secret string) interfaces.Service {
+func New(logger *zap.Logger, db *infra.PostgresDB, secret string) service.Service {
 	return &service{logger: logger, db: db, secret: secret}
 }
 
@@ -100,10 +101,10 @@ func (s *service) Register(ctx context.Context, email string, password string) e
 	}
 
 	//create user
-	user := infra.User{
+	user := infra2.User{
 		Email:    email,
 		Password: string(hashedPassword),
-		Role:     infra.ClientRole,
+		Role:     infra2.ClientRole,
 	}
 
 	//save user

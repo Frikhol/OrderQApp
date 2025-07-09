@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"auth_service/internal/interfaces"
 	pb "auth_service/proto/auth_service"
 	"context"
 
