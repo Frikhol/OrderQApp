@@ -1,8 +1,8 @@
 package service
 
 import (
-	infra2 "auth_service/internal/domain/models"
-	"auth_service/internal/infra"
+	"auth_service/internal/domain/models"
+	"auth_service/internal/interfaces/database"
 	"context"
 	"errors"
 	"strings"
@@ -15,14 +15,15 @@ import (
 
 type Service struct {
 	logger *zap.Logger
-	db     *infra.PostgresDB
+	db     database.Database
 	secret string
 }
 
-func NewService(logger *zap.Logger, db *infra.PostgresDB, secret string) *Service {
+func NewService(logger *zap.Logger, db database.Database, secret string) *Service {
 	return &Service{logger: logger, db: db, secret: secret}
 }
 
+// Login returns token and error, if there is no error, returns nil.
 func (s *Service) Login(ctx context.Context, email string, password string) (string, error) {
 	//empty check
 	if email == "" || password == "" {
@@ -39,13 +40,16 @@ func (s *Service) Login(ctx context.Context, email string, password string) (str
 	s.logger.Info("attempting login", zap.String("email", email))
 
 	//get user directly without checking existence first
-	user, err := s.db.GetUserByEmail(ctx, email)
+	user, err := s.db.GetUserByEmail(email)
 	if err != nil {
 		s.logger.Error("failed to get user", zap.Error(err))
 		return "", errors.New("no such user")
 	}
 
-	s.logger.Info("user found, checking password", zap.String("email", user.Email), zap.String("password", user.Password))
+	s.logger.Info("user found, checking password",
+		zap.String("email", user.Email),
+		zap.String("password", user.Password),
+		zap.String("role", string(user.Role)))
 
 	//check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
@@ -58,7 +62,7 @@ func (s *Service) Login(ctx context.Context, email string, password string) (str
 	//create token
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
-		"role":    user.Role,
+		"role":    string(user.Role),
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -84,7 +88,7 @@ func (s *Service) Register(ctx context.Context, email string, password string) e
 	}
 
 	//user exists check
-	err := s.db.UserExists(ctx, email)
+	err := s.db.UserExists(email)
 	if err == nil {
 		// No error means user exists
 		return errors.New("user already exists")
@@ -100,14 +104,14 @@ func (s *Service) Register(ctx context.Context, email string, password string) e
 	}
 
 	//create user
-	user := infra2.User{
+	user := models.User{
 		Email:    email,
 		Password: string(hashedPassword),
-		Role:     infra2.ClientRole,
+		Role:     models.ClientRole,
 	}
 
 	//save user
-	err = s.db.InsertUser(ctx, &user)
+	err = s.db.InsertUser(&user)
 	if err != nil {
 		return errors.New("failed to create user")
 	}
