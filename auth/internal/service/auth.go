@@ -1,8 +1,8 @@
-package impl
+package service
 
 import (
+	infra2 "auth_service/internal/domain/models"
 	"auth_service/internal/infra"
-	"auth_service/internal/interfaces"
 	"context"
 	"errors"
 	"strings"
@@ -13,17 +13,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type service struct {
+type Service struct {
 	logger *zap.Logger
 	db     *infra.PostgresDB
 	secret string
 }
 
-func New(logger *zap.Logger, db *infra.PostgresDB, secret string) interfaces.Service {
-	return &service{logger: logger, db: db, secret: secret}
+func NewService(logger *zap.Logger, db *infra.PostgresDB, secret string) *Service {
+	return &Service{logger: logger, db: db, secret: secret}
 }
 
-func (s *service) Login(ctx context.Context, email string, password string) (string, error) {
+func (s *Service) Login(ctx context.Context, email string, password string) (string, error) {
 	//empty check
 	if email == "" || password == "" {
 		s.logger.Error("email or password is empty")
@@ -72,7 +72,7 @@ func (s *service) Login(ctx context.Context, email string, password string) (str
 	return tokenString, nil
 }
 
-func (s *service) Register(ctx context.Context, email string, password string) error {
+func (s *Service) Register(ctx context.Context, email string, password string) error {
 	//empty check
 	if email == "" || password == "" {
 		return errors.New("email and password are required")
@@ -100,10 +100,10 @@ func (s *service) Register(ctx context.Context, email string, password string) e
 	}
 
 	//create user
-	user := infra.User{
+	user := infra2.User{
 		Email:    email,
 		Password: string(hashedPassword),
-		Role:     infra.ClientRole,
+		Role:     infra2.ClientRole,
 	}
 
 	//save user
@@ -115,7 +115,7 @@ func (s *service) Register(ctx context.Context, email string, password string) e
 	return nil
 }
 
-func (s *service) ValidateToken(ctx context.Context, tokenString string) (string, string, error) {
+func (s *Service) ValidateToken(ctx context.Context, tokenString string) (string, string, error) {
 	s.logger.Info("validating token", zap.String("token", tokenString))
 	//empty check
 	if tokenString == "" {

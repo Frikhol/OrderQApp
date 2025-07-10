@@ -24,7 +24,7 @@ const (
 	AuthService_ValidateToken_FullMethodName = "/auth_service.AuthService/ValidateToken"
 )
 
-// AuthServiceClient is the client API for AuthService service.
+// AuthServiceClient is the client API for AuthService transport.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
@@ -71,7 +71,7 @@ func (c *authServiceClient) ValidateToken(ctx context.Context, in *ValidateToken
 	return out, nil
 }
 
-// AuthServiceServer is the notification API for AuthService service.
+// AuthServiceServer is the notification API for AuthService transport.
 // All implementations should embed UnimplementedAuthServiceServer
 // for forward compatibility.
 type AuthServiceServer interface {
@@ -98,7 +98,7 @@ func (UnimplementedAuthServiceServer) ValidateToken(context.Context, *ValidateTo
 }
 func (UnimplementedAuthServiceServer) testEmbeddedByValue() {}
 
-// UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
+// UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this transport.
 // Use of this interface is not recommended, as added methods to AuthServiceServer will
 // result in compilation errors.
 type UnsafeAuthServiceServer interface {
@@ -170,7 +170,7 @@ func _AuthService_ValidateToken_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-// AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
+// AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService transport.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AuthService_ServiceDesc = grpc.ServiceDesc{

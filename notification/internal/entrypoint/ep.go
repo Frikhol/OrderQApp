@@ -23,13 +23,13 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
-	logger.Info("Notification service starting...")
+	logger.Info("Notification transport starting...")
 
 	AuthConn, err := grpc.NewClient("auth_service:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatal("grpc.NewClient: ", zap.Error(err))
 	}
-	logger.Info("Grpc connection with auth service established.")
+	logger.Info("Grpc connection with auth transport established.")
 
 	authClient := auth.NewAuthClient(auth_service.NewAuthServiceClient(AuthConn))
 	rabbitClient := rabbit.NewRabbitClient(cfg.RabbitMQ)
@@ -47,11 +47,11 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 		if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), nil); err != nil {
 			logger.Error(err.Error())
 		}
-		logger.Info("Notification service running", zap.String("port", cfg.Port))
+		logger.Info("Notification transport running", zap.String("port", cfg.Port))
 	}()
 
 	<-done
-	logger.Info("Notification service stopped")
+	logger.Info("Notification transport stopped")
 
 	return nil
 }

@@ -8,10 +8,10 @@ import (
 	"syscall"
 
 	"auth_service/internal/config"
-	handlers "auth_service/internal/handlers"
-	impl "auth_service/internal/impl"
+	"auth_service/internal/handler"
 	"auth_service/internal/infra"
-	proto "auth_service/proto/auth_service"
+	"auth_service/internal/service"
+	pb "auth_service/proto/auth_service"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -30,7 +30,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	defer db.Close()
 
 	grpcServer := grpc.NewServer()
-	proto.RegisterAuthServiceServer(grpcServer, handlers.New(impl.New(logger, db, cfg.Secret)))
+	pb.RegisterAuthServiceServer(grpcServer, handler.NewHandler(service.NewService(logger, db, cfg.Secret)))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)

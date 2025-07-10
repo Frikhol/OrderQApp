@@ -1,13 +1,13 @@
-package infra
+package models
 
 import "github.com/google/uuid"
 
 type Role string
 
 const (
-	ClientRole  Role = "client"
-	AgentRole   Role = "agent"
-	ManagerRole Role = "manager"
+	ClientRole Role = "client"
+	AgentRole  Role = "agent"
+	AdminRole  Role = "admin"
 )
 
 type User struct {

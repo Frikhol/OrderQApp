@@ -2,6 +2,7 @@ package infra
 
 import (
 	"auth_service/internal/config"
+	infra2 "auth_service/internal/domain/models"
 	"context"
 	"database/sql"
 	"errors"
@@ -56,7 +57,7 @@ func (p *PostgresDB) UserExists(ctx context.Context, email string) error {
 	return nil // No error means user exists
 }
 
-func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
+func (p *PostgresDB) InsertUser(ctx context.Context, user *infra2.User) error {
 	query := `INSERT INTO users (email, password, role) VALUES ($1, $2, $3)`
 	_, err := p.Db.ExecContext(ctx, query, user.Email, user.Password, user.Role)
 	if err != nil {
@@ -65,9 +66,9 @@ func (p *PostgresDB) InsertUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+func (p *PostgresDB) GetUserByEmail(ctx context.Context, email string) (*infra2.User, error) {
 	query := `SELECT id, email, password, role FROM users WHERE email = $1`
-	var user User
+	var user infra2.User
 	err := p.Db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
 	if err != nil {
 		if err == sql.ErrNoRows {
