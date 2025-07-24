@@ -6,16 +6,19 @@ import (
 	"github.com/streadway/amqp"
 	"log"
 	"notification_service/internal/config"
+	"notification_service/internal/domain/types"
+	"notification_service/internal/interfaces/app"
 )
 
 type Client struct {
-	url string
+	url      string
+	notifier app.Notifier
 }
 
 const OrderEventExchange = "order.events"
 
-func NewRabbitClient(cfg config.RabbitMQ) *Client {
-	return &Client{cfg.URL}
+func NewRabbitClient(cfg config.RabbitMQ, notifier app.Notifier) *Client {
+	return &Client{cfg.URL, notifier}
 }
 
 func (r *Client) StartConsuming(ctx context.Context) error {
@@ -94,7 +97,12 @@ func (r *Client) StartConsuming(ctx context.Context) error {
 			go func(queue string, m <-chan amqp.Delivery) {
 				for msg := range m {
 					log.Printf("[queue: %s] received message: %s", queue, msg.Body)
-					// TODO: handle message
+					newMsg := types.WSMessage{
+						Type:    "test type",
+						Payload: msg.Body,
+					}
+					log.Printf("[queue: %s] sending message: %s to user: %v", queue, newMsg, msg.UserId)
+					r.notifier.Notify(msg.UserId, newMsg)
 				}
 			}(queueName, msgs)
 		}

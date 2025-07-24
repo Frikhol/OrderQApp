@@ -53,6 +53,8 @@ services:
         condition: service_healthy
     networks:
       - orderq_network
+    ports:
+      - "9000:9000"
     volumes:
       - ./auth/migrations:/migrations
     command: >
@@ -79,6 +81,8 @@ services:
         condition: service_healthy
     networks:
       - orderq_network
+    ports:
+      - "9000:9000"
     volumes:
       - ./order/migrations:/migrations
     command: >

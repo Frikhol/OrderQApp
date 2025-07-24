@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
+	"notification_service/internal/app"
 	"notification_service/internal/config"
 	"notification_service/internal/connstore"
 	"notification_service/internal/infra/auth"
@@ -32,7 +33,8 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	logger.Info("Grpc connection with auth transport established.")
 
 	authClient := auth.NewAuthClient(auth_service.NewAuthServiceClient(AuthConn))
-	rabbitClient := rabbit.NewRabbitClient(cfg.RabbitMQ)
+	notifier := app.NewNotifier()
+	rabbitClient := rabbit.NewRabbitClient(cfg.RabbitMQ, notifier)
 
 	err = rabbitClient.StartConsuming(context.TODO())
 	if err != nil {
@@ -43,7 +45,7 @@ func Run(cfg *config.Config, logger *zap.Logger) error {
 	store := connstore.New()
 
 	go func() {
-		http.HandleFunc("/ws", websocket.NewHandler(authClient, store).HandleUser)
+		http.HandleFunc("/ws", websocket.NewHandler(authClient, store, logger).HandleUser)
 		if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), nil); err != nil {
 			logger.Error(err.Error())
 		}

@@ -23,8 +23,6 @@ func New(logger *zap.Logger, db *database.PostgresDB, broker *broker.RabbitMQ) i
 
 func (s *service) CreateOrder(ctx context.Context, order *infra.Order) error {
 	s.logger.Info("Creating order", zap.Any("order", order))
-
-	s.logger.Info("Creating order")
 	if err := s.db.CreateOrder(ctx, order); err != nil {
 		s.logger.Error("Failed to create order", zap.Error(err))
 		return err
